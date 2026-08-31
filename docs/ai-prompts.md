@@ -4,7 +4,7 @@
 
 ### Prompt
 Provided the full assignment brief (all 10 goals, with exact attention to Goal 4's shift-lifecycle
-rules and Goal 10's alert dismiss/reappear rule) and asked: monolith vs microservices given a 12-hour
+rules and Goal 10's alert dismiss/reappear rule) and asked: monolith vs microservices given a time
 budget, then asked for a complete folder structure, then asked for help sketching the data model.
 
 ### What you got
@@ -17,3 +17,20 @@ AlertDismissal tracking a state-transition timestamp instead of a boolean flag.
 ### What you corrected
 Nothing wrong yet — this was design-stage discussion, not generated code. Will update this section
 once implementation surfaces a bad suggestion; the likely candidate is the overlap-check query logic.
+
+
+## Mongoose model implementation
+
+### Prompt
+Asked for all 7 Mongoose models generated in ES6 module syntax, matching schema.md's field list and
+planned indexes exactly.
+
+### What you got
+7 model files (User, Program, ProgramMember, Shift, Signup, ShiftEvent, AlertDismissal) with validation,
+enums matching Goal 4's exact fill-state values, and the planned indexes (program+date+status and a
+text index on Shift, volunteer+status and shift+status on Signup, a unique compound index on
+ProgramMember).
+
+### What you corrected
+Nothing wrong in the generated code — verified each file against schema.md field-by-field before
+committing.

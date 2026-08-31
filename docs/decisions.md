@@ -38,3 +38,38 @@
   and still valid" from "dismissed, but the shift has since re-entered understaffed" — it would just
   stay permanently dismissed. Scoping the dismissal to the transition timestamp means a new transition
   is simply not covered by the old dismissal.
+
+## Decision 5
+
+- **Chose:** Store Shift.startTime as a "HH:mm" string field, combined with date + durationMinutes into
+  real Date objects only at query/comparison time (in the overlap-check service, to be built).
+- **Rejected:** Storing a single combined startDateTime field, or startTime as a Date itself.
+- **Why:** "HH:mm" is simpler to render/edit in forms and matches how a coordinator naturally thinks
+  about a shift. The tradeoff is every time-window comparison needs to reconstruct a real Date on the
+  fly — accepted since that reconstruction will live in one shared service function, not scattered
+  across routes.
+
+## Decision 6
+
+- **Chose:** Program membership is entirely coordinator-initiated — a coordinator adds an existing
+  registered user (by searching name/email) to a program directly. No volunteer-facing "join" or
+  "request to join" action exists anywhere.
+- **Rejected:** A self-serve join flow (volunteer browses programs, requests to join, coordinator
+  approves/rejects).
+- **Why:** Goal 5's language is consistently one-directional ("only a coordinator can add or remove a
+  volunteer") with no mention of a request or approval state, and the brief's own scenario describes a
+  coordinator who already knows their volunteers personally (replacing a group chat), not a public
+  marketplace of strangers self-enrolling. A volunteer still self-registers an account (Goal 1) — the
+  coordinator just needs that account to already exist before they can add them to a program.
+
+## Decision 7
+
+- **Chose:** Registration form includes a role dropdown (coordinator/volunteer) — the user self-selects
+  their role at signup.
+- **Rejected:** Invite-only coordinator creation, or an admin-approval flow for coordinator accounts.
+- **Why:** The brief specifies role-based server-side enforcement of actions, but says nothing about how
+  a coordinator account gets created in the first place. Self-select is a known simplification — in a
+  real deployment this would be a security gap, and would instead be gated behind an invite link or an
+  existing coordinator promoting a user. For this assignment, self-select keeps registration simple and
+  lets a reviewer create test accounts of either role directly, not solely dependent on seeded demo
+  credentials.
