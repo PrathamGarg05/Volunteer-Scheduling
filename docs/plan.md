@@ -10,7 +10,7 @@
 
 ## What did you estimate versus what it actually took?
 
-*To be filled in day by day*
+Day 1 (planned 2h): scaffolding + models + auth took longer than the original plan of 2 hours. It took about 2.5 hours mainly becuase of designing the schema. Actual auth logic took less time once started.
 
 ## What did you cut when you ran short?
 
