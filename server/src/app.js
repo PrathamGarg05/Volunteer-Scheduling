@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import authRoutes from './routes/auth.routes.js';
 import programRoutes from "./routes/program.routes.js";
+import programMemberRoutes from "./routes/programMember.routes.js"
 
 const app = express();
 app.use(cors());
@@ -14,5 +15,6 @@ app.get("/health", (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use("/api/programs", programRoutes);
+app.use("/api/programs/:id/members", programMemberRoutes);
 
 export default app;
