@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import authRoutes from './routes/auth.routes.js';
+import programRoutes from "./routes/program.routes.js";
 
 const app = express();
 app.use(cors());
@@ -12,5 +13,6 @@ app.get("/health", (req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use("/api/programs", programRoutes);
 
 export default app;
