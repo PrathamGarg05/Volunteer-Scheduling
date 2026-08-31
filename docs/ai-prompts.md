@@ -21,6 +21,8 @@ AlertDismissal tracking a state-transition timestamp instead of a boolean flag.
 Nothing wrong yet — this was design-stage discussion, not generated code. Will update this section
 once implementation surfaces a bad suggestion; the likely candidate is the overlap-check query logic.
 
+
+
 ## Mongoose model implementation
 
 ### Prompt
@@ -40,6 +42,8 @@ ProgramMember).
 Nothing wrong in the generated code — verified each file against schema.md field-by-field before
 committing.
 
+
+
 ## Auth implementation and testing
 
 ### Prompt
@@ -58,3 +62,53 @@ role.middleware.js, wired into app.js under /api/auth.
 Nothing wrong in the generated code. Tested both register and login in Postman before committing —
 confirmed passwordHash never appears in any response, and both role types can register and receive a
 valid token.
+
+
+
+## Program CRUD
+
+### Prompt
+
+Asked for program create/read/update/archive/restore routes, coordinator-only for writes, with
+visibility scoped by role (coordinators see all programs, volunteers see only ones they belong to
+via ProgramMember).
+
+### What you got
+
+program.controller.js with 6 handlers and program.routes.js wiring them with requireAuth/requireRole.
+
+### What you corrected
+
+Nothing wrong in the code, but had to decide an ambiguity the brief doesn't address: whether coordinators
+should be scoped to programs they created, or see all programs. Went with "all programs" since Goal 1
+only restricts volunteer visibility, not coordinator visibility — logged as Decision 8.
+
+Tested all 8 flows in Postman: create (coordinator success, volunteer 403), list (role-scoped correctly,
+volunteer sees empty array pre-membership), get-by-id (volunteer correctly blocked from a non-member
+program), archive/restore (correctly hidden/shown from default list). All passed on first implementation.
+
+
+
+## Program membership
+
+### Prompt
+
+Asked for add/remove/list member routes, coordinator-only, nested under a program (e.g.
+/api/programs/:id/members), matching Goal 5's membership rules.
+
+### What you got
+
+programMember.controller.js (addMember, removeMember, getProgramMembers) and a nested Express router
+using mergeParams: true to access the parent route's :id param.
+
+### What you corrected
+
+Nothing wrong in the code. Learned the mergeParams pattern for nested routers, since Express routers
+don't inherit parent params by default.
+
+Tested: add (success, duplicate correctly rejected with 409, volunteer correctly blocked with 403),
+list with populated volunteer name/email, and the actual end-to-end proof — GET /api/programs as that
+volunteer went from empty to showing the program after being added, then back to empty after removal.
+Also independently tested that archiving a program hides it from an already-added volunteer's view too,
+not just the coordinator's — confirms the isArchived filter is applied consistently across both role
+branches in getPrograms.
