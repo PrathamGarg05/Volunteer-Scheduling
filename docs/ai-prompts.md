@@ -176,3 +176,16 @@ and overflowed instead of moving to a new line.
 Replaced the flex row with a responsive CSS grid (1 column on mobile, 2 on small screens, 3 on large),
 moved the submit button outside the grid as its own full-width element below it, and added labels above
 each input. Applied the same fix to the program-creation form.
+
+## Fill-state unit tests
+
+### Prompt
+Asked for the fill-state derivation unit tests covering the exact boundary cases (zero
+signups, exact match, headcount of 1, over-capacity).
+
+### What you got
+8 vitest unit tests, all passing. Function throws on invalid input
+(negative count, headcount < 1) rather than silently returning something wrong.
+
+### What you corrected
+Nothing wrong in the logic. Understood unit tests.

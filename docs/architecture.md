@@ -27,3 +27,8 @@ No message queue, no separate services, no websockets — plain request/response
 - deleteShift currently has no guard against deleting a shift with active signups (no Signup model
   existed yet when this route was built). Flagged to revisit once Signup exists — orphaning active
   signups on delete would be a real data-integrity gap if left unaddressed.
+- No transaction-level locking on the signup write path — two simultaneous signup requests for the
+  last open spot on a shift could theoretically both succeed, over-filling it. deriveFillState's
+  defensive >= comparison prevents the fill-state from breaking in that case, but doesn't prevent the
+  over-signup itself. Acceptable risk for a demo app's realistic concurrency levels; a production
+  system would need a DB-level unique constraint or transaction around the count-check-and-insert.
