@@ -21,9 +21,9 @@ AlertDismissal tracking a state-transition timestamp instead of a boolean flag.
 Nothing wrong yet — this was design-stage discussion, not generated code. Will update this section
 once implementation surfaces a bad suggestion; the likely candidate is the overlap-check query logic.
 
-
-
 ## Mongoose model implementation
+
+
 
 ### Prompt
 
@@ -42,9 +42,9 @@ ProgramMember).
 Nothing wrong in the generated code — verified each file against schema.md field-by-field before
 committing.
 
-
-
 ## Auth implementation and testing
+
+
 
 ### Prompt
 
@@ -63,9 +63,9 @@ Nothing wrong in the generated code. Tested both register and login in Postman b
 confirmed passwordHash never appears in any response, and both role types can register and receive a
 valid token.
 
-
-
 ## Program CRUD
+
+
 
 ### Prompt
 
@@ -86,8 +86,6 @@ only restricts volunteer visibility, not coordinator visibility — logged as De
 Tested all 8 flows in Postman: create (coordinator success, volunteer 403), list (role-scoped correctly,
 volunteer sees empty array pre-membership), get-by-id (volunteer correctly blocked from a non-member
 program), archive/restore (correctly hidden/shown from default list). All passed on first implementation.
-
-
 
 ## Program membership
 
@@ -112,3 +110,23 @@ volunteer went from empty to showing the program after being added, then back to
 Also independently tested that archiving a program hides it from an already-added volunteer's view too,
 not just the coordinator's — confirms the isArchived filter is applied consistently across both role
 branches in getPrograms.
+
+## Shift CRUD
+
+### Prompt
+Asked for shift create/read/update/delete routes nested under a program, coordinator-only for writes,
+with volunteer access gated by program membership (matching the same pattern used for programs and
+membership routes).
+
+### What you got
+shift.controller.js with 5 handlers, shift.routes.js using mergeParams to access the parent program id.
+Flagged two judgment calls in code comments rather than silently deciding them: (1) editing a Closed
+shift is blocked, even though the brief only explicitly locks signups/cancellations on Closed shifts,
+not edits; (2) deleteShift currently has no check against existing signups, since Signup doesn't exist
+yet — noted as a gap to revisit once it does.
+
+### What you corrected
+Nothing wrong in the generated code — the two flagged items above are open judgment calls, not bugs.
+
+Tested: create (coordinator success, volunteer 403), list scoped correctly (member volunteer sees
+shifts, non-member volunteer gets 403), update, delete — all as expected.

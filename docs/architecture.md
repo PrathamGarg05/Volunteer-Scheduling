@@ -24,3 +24,6 @@ No message queue, no separate services, no websockets — plain request/response
 - No microservices (decisions.md #1).
 - No real-time websocket layer for alerts/dashboard — refresh-on-navigation is sufficient for what
   the brief actually asks for.
+- deleteShift currently has no guard against deleting a shift with active signups (no Signup model
+  existed yet when this route was built). Flagged to revisit once Signup exists — orphaning active
+  signups on delete would be a real data-integrity gap if left unaddressed.
