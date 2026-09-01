@@ -89,6 +89,8 @@ program), archive/restore (correctly hidden/shown from default list). All passed
 
 ## Program membership
 
+
+
 ### Prompt
 
 Asked for add/remove/list member routes, coordinator-only, nested under a program (e.g.
@@ -114,11 +116,13 @@ branches in getPrograms.
 ## Shift CRUD
 
 ### Prompt
+
 Asked for shift create/read/update/delete routes nested under a program, coordinator-only for writes,
 with volunteer access gated by program membership (matching the same pattern used for programs and
 membership routes).
 
 ### What you got
+
 shift.controller.js with 5 handlers, shift.routes.js using mergeParams to access the parent program id.
 Flagged two judgment calls in code comments rather than silently deciding them: (1) editing a Closed
 shift is blocked, even though the brief only explicitly locks signups/cancellations on Closed shifts,
@@ -126,6 +130,7 @@ not edits; (2) deleteShift currently has no check against existing signups, sinc
 yet — noted as a gap to revisit once it does.
 
 ### What you corrected
+
 Nothing wrong in the generated code — the two flagged items above are open judgment calls, not bugs.
 
 Tested: create (coordinator success, volunteer 403), list scoped correctly (member volunteer sees
@@ -134,16 +139,40 @@ shifts, non-member volunteer gets 403), update, delete — all as expected.
 ## Frontend auth flow and basic UI
 
 ### Prompt
+
 Asked for a React auth context (login/logout, localStorage-backed), a ProtectedRoute wrapper for
 role-gated pages, login/register pages, and basic functional (unstyled) program list + program detail
 screens wired to the already-built API.
 
 ### What you got
+
 AuthContext.jsx, useAuth hook, ProtectedRoute component, Login/Register pages, ProgramsList and
 ProgramDetail pages, an axios instance with an interceptor that auto-attaches the JWT to every request.
 
 ### What you corrected
+
 Nothing wrong in the generated code. Confirmed with Claude that ProtectedRoute is a UI convenience only,
 not the actual security boundary — the server-side requireRole middleware (already tested with real
 403s) is what actually enforces access; the frontend gate just avoids showing a coordinator-only form
 to a volunteer.
+
+## Tailwind CSS setup and styling pass
+
+### Prompt
+
+Asked to add Tailwind CSS to the existing Vite/React app and restyle the login, register, program list,
+and program detail screens, plus a shared FillStateBadge component for consistent status colors across
+what will later also be the dashboard and alerts views.
+
+### What you got
+
+Tailwind v4 setup via @tailwindcss/vite (no separate config file needed, unlike v3), a NavBar component,
+a FillStateBadge component, and restyled JSX for the existing pages using utility classes only.
+
+### What you corrected
+
+Flex containers don't wrap by default, so once 5 inputs + a button exceeded the available width, elements got squeezed
+and overflowed instead of moving to a new line.
+Replaced the flex row with a responsive CSS grid (1 column on mobile, 2 on small screens, 3 on large),
+moved the submit button outside the grid as its own full-width element below it, and added labels above
+each input. Applied the same fix to the program-creation form.
