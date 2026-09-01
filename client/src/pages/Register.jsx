@@ -24,18 +24,33 @@ export default function Register() {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Register</h2>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <input name="name" placeholder="Name" value={form.name} onChange={handleChange} required />
-      <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-      <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
-      <select name="role" value={form.role} onChange={handleChange}>
-        <option value="volunteer">Volunteer</option>
-        <option value="coordinator">Coordinator</option>
-      </select>
-      <button type="submit">Register</button>
-      <p>Already have an account? <Link to="/login">Login</Link></p>
-    </form>
+    <div className="max-w-sm mx-auto mt-16">
+      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-sm border space-y-4">
+        <h2 className="text-2xl font-semibold text-gray-900">Register</h2>
+        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
+        <input
+          name="name" placeholder="Name" value={form.name} onChange={handleChange} required
+          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required
+          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required
+          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select name="role" value={form.role} onChange={handleChange} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="volunteer">Volunteer</option>
+          <option value="coordinator">Coordinator</option>
+        </select>
+        <button type="submit" className="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700">
+          Register
+        </button>
+        <p className="text-sm text-gray-500 text-center">
+          Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
+        </p>
+      </form>
+    </div>
   );
 }
