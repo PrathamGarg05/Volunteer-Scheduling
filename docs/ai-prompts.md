@@ -130,3 +130,20 @@ Nothing wrong in the generated code — the two flagged items above are open jud
 
 Tested: create (coordinator success, volunteer 403), list scoped correctly (member volunteer sees
 shifts, non-member volunteer gets 403), update, delete — all as expected.
+
+## Frontend auth flow and basic UI
+
+### Prompt
+Asked for a React auth context (login/logout, localStorage-backed), a ProtectedRoute wrapper for
+role-gated pages, login/register pages, and basic functional (unstyled) program list + program detail
+screens wired to the already-built API.
+
+### What you got
+AuthContext.jsx, useAuth hook, ProtectedRoute component, Login/Register pages, ProgramsList and
+ProgramDetail pages, an axios instance with an interceptor that auto-attaches the JWT to every request.
+
+### What you corrected
+Nothing wrong in the generated code. Confirmed with Claude that ProtectedRoute is a UI convenience only,
+not the actual security boundary — the server-side requireRole middleware (already tested with real
+403s) is what actually enforces access; the frontend gate just avoids showing a coordinator-only form
+to a volunteer.
