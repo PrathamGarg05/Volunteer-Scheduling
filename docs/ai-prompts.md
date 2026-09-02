@@ -23,8 +23,6 @@ once implementation surfaces a bad suggestion; the likely candidate is the overl
 
 ## Mongoose model implementation
 
-
-
 ### Prompt
 
 Asked for all 7 Mongoose models generated in ES6 module syntax, matching schema.md's field list and
@@ -44,8 +42,6 @@ committing.
 
 ## Auth implementation and testing
 
-
-
 ### Prompt
 
 Asked for register/login controllers (bcrypt hashing, JWT issuing), a requireAuth middleware to verify
@@ -64,8 +60,6 @@ confirmed passwordHash never appears in any response, and both role types can re
 valid token.
 
 ## Program CRUD
-
-
 
 ### Prompt
 
@@ -88,8 +82,6 @@ volunteer sees empty array pre-membership), get-by-id (volunteer correctly block
 program), archive/restore (correctly hidden/shown from default list). All passed on first implementation.
 
 ## Program membership
-
-
 
 ### Prompt
 
@@ -180,12 +172,66 @@ each input. Applied the same fix to the program-creation form.
 ## Fill-state unit tests
 
 ### Prompt
+
 Asked for the fill-state derivation unit tests covering the exact boundary cases (zero
 signups, exact match, headcount of 1, over-capacity).
 
 ### What you got
+
 8 vitest unit tests, all passing. Function throws on invalid input
 (negative count, headcount < 1) rather than silently returning something wrong.
 
 ### What you corrected
+
 Nothing wrong in the logic. Understood unit tests.
+
+## Signup, overlap check, and shift lifecycle
+
+### Prompt
+
+Asked for the overlap-check service (cross-program, using interval-overlap math on reconstructed shift
+time windows), the signup/cancel controllers enforcing capacity + overlap + membership, a manual
+close-shift transition, and append-only ShiftEvent logging on create/signup/cancel/state-change.
+
+### What you got
+
+overlap.service.js, signup.controller.js, an update to shift.controller.js for closeShift and a
+"created" event on shift creation, all wired with routes.
+
+### What you corrected
+
+Nothing wrong in the generated overlap logic itself — it was cross-program by design from the start. Tested it specifically by creating two shifts in different programs with overlapping times and confirming the second signup was correctly rejected — this was the actual verification step, not just trusting the code.
+Found 2 bugs while testing which were resolved and logged below.
+
+## Bug: cancel didn't validate signup-shift relationship
+
+### Prompt
+Reported that cancelling with a mismatched shiftId/signupId pair in the URL still returned "already
+cancelled" instead of a not-belonging error, discovered through manual testing, not from an AI-flagged
+issue.
+
+### What you got (the original, wrong version)
+cancelSignup fetched the Signup by signupId alone and never cross-checked it against the shiftId also
+present in the nested route path, so an inconsistent URL silently "worked" as long as the signupId
+itself was valid.
+
+### What you corrected
+Added an explicit check that signup.shift matches the shiftId param before proceeding, returning 400
+if not. Generalized takeaway: any route with multiple related ids in its path needs an explicit
+consistency check between them — the nesting implies a relationship the code has to actually verify.
+
+## Bug: updating headcount didn't re-derive fill state
+
+### Prompt
+Reported that reducing/increasing a shift's requiredHeadcount after it was already Filled didn't
+change its status, even with the signup count now below the new headcount.
+
+### What you got (the original, wrong version)
+updateShift's original code (written on Day 2, before Signup or fillState.service.js existed) had a
+comment flagging this exact gap as something to revisit once those existed — and it was never revisited
+until this manual test surfaced it as a live bug.
+
+### What you corrected
+Added a re-derivation step inside updateShift: when requiredHeadcount changes, recount active signups,
+call deriveFillState, and log a state_change ShiftEvent if the status actually changed. This closes a
+gap that was flagged in a code comment weeks earlier but not acted on until testing caught it.

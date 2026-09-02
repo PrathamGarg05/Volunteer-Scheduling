@@ -17,7 +17,21 @@ No message queue, no separate services, no websockets — plain request/response
 
 ## What is the request path for one representative user action, end to end?
 
-*To be filled in once the signup route exists.*
+**Volunteer signs up for a shift:**
+
+1. Client sends `POST /api/programs/:id/shifts/:shiftId/signups` with a Bearer JWT.
+2. `requireAuth` middleware verifies the JWT, attaches `req.user = { id, role }`.
+3. `createSignup` controller fetches the Shift, rejects if its status is Filled or Closed.
+4. Checks `ProgramMember` to confirm the volunteer belongs to the shift's program — rejects with 403
+   if not.
+5. Checks for an existing active `Signup` on this exact shift — rejects with 409 if a duplicate.
+6. Calls `hasOverlappingSignup`, which fetches every other active `Signup` this volunteer holds
+   (across all programs), reconstructs each shift's time window from `date + startTime + durationMinutes`,
+   and checks for interval overlap — rejects with 400 if any overlap is found.
+7. Creates the `Signup` document, then appends a `signup`-type `ShiftEvent`.
+8. Recomputes the shift's fill state via `deriveFillState` against the new active signup count; if the
+   state changed, persists it and appends a `state_change` `ShiftEvent` with old and new state.
+9. Responds 201 with the created signup.
 
 ## What did you decide not to build, and why?
 
