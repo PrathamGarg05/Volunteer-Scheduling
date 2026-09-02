@@ -235,3 +235,21 @@ until this manual test surfaced it as a live bug.
 Added a re-derivation step inside updateShift: when requiredHeadcount changes, recount active signups,
 call deriveFillState, and log a state_change ShiftEvent if the status actually changed. This closes a
 gap that was flagged in a code comment weeks earlier but not acted on until testing caught it.
+
+## Signup/cancel frontend
+
+### Prompt
+Asked for the frontend signup and cancel flow for shifts, including how to track whether the logged-in
+volunteer already holds a signup for each shift shown in the list.
+
+### What you got
+A small new backend endpoint (getMySignupsForProgram) since the existing shift list had no way to
+convey a viewer's own signup status, plus signups.api.js and updated ProgramDetail.jsx with a
+mySignups state map, sign up / cancel buttons conditionally rendered based on role, signup status,
+and shift fill-state.
+
+### What you corrected
+Realized mid-build that the shift list endpoint alone was insufficient for the UI to know "have I
+already signed up for this" — needed a dedicated small endpoint rather than trying to infer it
+client-side. Not a wrong output, but a gap surfaced only once actually building the UI against the
+existing API.
