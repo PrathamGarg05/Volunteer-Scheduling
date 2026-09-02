@@ -84,9 +84,14 @@ export const createSignup = async (req, res) => {
 
 export const cancelSignup = async (req, res) => {
   try {
-    const { signupId } = req.params;
+    const { shiftId, signupId } = req.params;
     const signup = await Signup.findById(signupId);
     if (!signup) return res.status(404).json({ message: "Signup not found." });
+
+    if (!signup.shift.equals(shiftId)) {
+        return res.status(400).json({ message: "This signup does not belong to the specified shift." });
+    }
+    
     if (signup.status === "cancelled") {
       return res.status(400).json({ message: "Signup is already cancelled." });
     }

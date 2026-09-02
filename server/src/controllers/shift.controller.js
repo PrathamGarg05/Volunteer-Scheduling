@@ -2,6 +2,9 @@ import Shift from "../models/Shift.js";
 import Program from "../models/Program.js";
 import ProgramMember from "../models/ProgramMember.js";
 import ShiftEvent from "../models/ShiftEvent.js";
+import { deriveFillState } from "../services/fillState.service.js";
+import Signup from "../models/Signup.js";
+import ShiftEvent from "../models/ShiftEvent.js";
 
 export const createShift = async (req, res) => {
   try {
@@ -108,10 +111,21 @@ export const updateShift = async (req, res) => {
     if (startTime !== undefined) shift.startTime = startTime;
     if (durationMinutes !== undefined) shift.durationMinutes = durationMinutes;
     if (location !== undefined) shift.location = location;
-    if (requiredHeadcount !== undefined) shift.requiredHeadcount = requiredHeadcount;
-    // NOTE: if requiredHeadcount changes, status may need re-deriving against the
-    // current signup count. That recompute isn't wired yet. Safe for now since no signups
-    // can exist yet (no signup route).
+    
+    if (requiredHeadcount !== undefined) {
+      shift.requiredHeadcount = requiredHeadcount;
+      const activeCount = await Signup.countDocuments({ shift: shift._id, status: "active" });
+      const newStatus = deriveFillState(activeCount, requiredHeadcount);
+      if (newStatus !== shift.status) {
+        const oldStatus = shift.status;
+        shift.status = newStatus;
+        await shift.save();
+        await ShiftEvent.create({
+          shift: shift._id, type: "state_change", oldState: oldStatus, newState: newStatus, actor: req.user.id,
+        });
+        return res.json(shift);
+      }
+    }
 
     await shift.save();
     res.json(shift);
