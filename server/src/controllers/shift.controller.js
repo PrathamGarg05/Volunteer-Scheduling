@@ -1,6 +1,7 @@
 import Shift from "../models/Shift.js";
 import Program from "../models/Program.js";
 import ProgramMember from "../models/ProgramMember.js";
+import ShiftEvent from "../models/ShiftEvent.js";
 
 export const createShift = async (req, res) => {
   try {
@@ -32,6 +33,8 @@ export const createShift = async (req, res) => {
       // only ever be changed by the fill-state derivation logic (Goal 4),
       // never set directly here.
     });
+
+    await ShiftEvent.create({ shift: shift._id, type: "created", actor: req.user.id });
 
     res.status(201).json(shift);
   } catch (err) {
@@ -126,5 +129,31 @@ export const deleteShift = async (req, res) => {
     res.json({ message: "Shift deleted." });
   } catch (err) {
     res.status(500).json({ message: "Failed to delete shift.", error: err.message });
+  }
+};
+
+export const closeShift = async (req, res) => {
+  try {
+    const shift = await Shift.findById(req.params.shiftId);
+    if (!shift) return res.status(404).json({ message: "Shift not found." });
+    if (shift.status === "Closed") {
+      return res.status(400).json({ message: "Shift is already closed." });
+    }
+
+    const oldStatus = shift.status;
+    shift.status = "Closed";
+    await shift.save();
+
+    await ShiftEvent.create({
+      shift: shift._id,
+      type: "state_change",
+      oldState: oldStatus,
+      newState: "Closed",
+      actor: req.user.id,
+    });
+
+    res.json(shift);
+  } catch (err) {
+    res.status(500).json({ message: "Failed to close shift.", error: err.message });
   }
 };

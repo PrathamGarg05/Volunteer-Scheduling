@@ -7,6 +7,7 @@ import {
   getShiftById,
   updateShift,
   deleteShift,
+  closeShift
 } from "../controllers/shift.controller.js";
 
 const router = express.Router({ mergeParams: true });
@@ -16,5 +17,6 @@ router.get("/", requireAuth, getShiftsByProgram);
 router.get("/:shiftId", requireAuth, getShiftById);
 router.put("/:shiftId", requireAuth, requireRole("coordinator"), updateShift);
 router.delete("/:shiftId", requireAuth, requireRole("coordinator"), deleteShift);
+router.patch("/:shiftId/close", requireAuth, requireRole("coordinator"), closeShift);
 
 export default router;
