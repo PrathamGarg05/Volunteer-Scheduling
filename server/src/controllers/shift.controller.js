@@ -4,7 +4,6 @@ import ProgramMember from "../models/ProgramMember.js";
 import ShiftEvent from "../models/ShiftEvent.js";
 import { deriveFillState } from "../services/fillState.service.js";
 import Signup from "../models/Signup.js";
-import ShiftEvent from "../models/ShiftEvent.js";
 
 export const createShift = async (req, res) => {
   try {
@@ -111,7 +110,7 @@ export const updateShift = async (req, res) => {
     if (startTime !== undefined) shift.startTime = startTime;
     if (durationMinutes !== undefined) shift.durationMinutes = durationMinutes;
     if (location !== undefined) shift.location = location;
-    
+
     if (requiredHeadcount !== undefined) {
       shift.requiredHeadcount = requiredHeadcount;
       const activeCount = await Signup.countDocuments({ shift: shift._id, status: "active" });

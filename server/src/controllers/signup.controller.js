@@ -91,7 +91,7 @@ export const cancelSignup = async (req, res) => {
     if (!signup.shift.equals(shiftId)) {
         return res.status(400).json({ message: "This signup does not belong to the specified shift." });
     }
-    
+
     if (signup.status === "cancelled") {
       return res.status(400).json({ message: "Signup is already cancelled." });
     }
@@ -123,4 +123,23 @@ export const cancelSignup = async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: "Failed to cancel signup.", error: err.message });
   }
+};
+
+export const getMySignupsForProgram = async (req, res) => {
+    try {
+      const { id: programId } = req.params;
+      const shiftIds = (await Shift.find({ program: programId }).select("_id")).map((s) => s._id);
+  
+      const signups = await Signup.find({
+        volunteer: req.user.id,
+        shift: { $in: shiftIds },
+        status: "active",
+      }).select("shift");
+  
+      // returns a map-friendly array: [{ shiftId, signupId }]
+      const result = signups.map((s) => ({ shiftId: s.shift, signupId: s._id }));
+      res.json(result);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch signups.", error: err.message });
+    }
 };

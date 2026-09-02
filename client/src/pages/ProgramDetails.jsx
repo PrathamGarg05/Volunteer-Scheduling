@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProgramById } from "../api/program.api.js";
 import { getShiftsByProgram, createShift } from "../api/shifts.api.js";
+import { signUpForShift, cancelSignup, getMySignups } from "../api/signups.api.js";
 import { useAuth } from "../hooks/useAuth.js";
 import FillStateBadge from "../components/FillStateBadge.jsx";
 
@@ -9,6 +10,8 @@ export default function ProgramDetail() {
   const { id } = useParams();
   const [program, setProgram] = useState(null);
   const [shifts, setShifts] = useState([]);
+  const [mySignups, setMySignups] = useState({});
+  const [actionError, setActionError] = useState("");
   const [form, setForm] = useState({ date: "", startTime: "", durationMinutes: "", location: "", requiredHeadcount: "" });
   const { user } = useAuth();
 
@@ -16,6 +19,13 @@ export default function ProgramDetail() {
     const [progRes, shiftsRes] = await Promise.all([getProgramById(id), getShiftsByProgram(id)]);
     setProgram(progRes.data);
     setShifts(shiftsRes.data);
+
+    if(user.role === "volunteer") {
+      const signupsRes = await getMySignups(id);
+      const map = {};
+      signupsRes.data.forEach((s) => { map[s.shiftId] = s.signupId; });
+      setMySignups(map);
+    }
   };
 
   useEffect(() => { load(); }, [id]);
@@ -25,6 +35,30 @@ export default function ProgramDetail() {
     await createShift(id, form);
     setForm({ date: "", startTime: "", durationMinutes: "", location: "", requiredHeadcount: "" });
     load();
+  };
+
+  const handleSignUp = async (shiftId) => {
+    setActionError("");
+    try {
+      const res = await signUpForShift(id, shiftId);
+      setMySignups({ ...mySignups, [shiftId]: res.data._id });
+      load(); // refresh shift list so the fill-state badge updates
+    } catch (err) {
+      setActionError(err.response?.data?.message || "Signup failed.");
+    }
+  };
+
+  const handleCancel = async (shiftId) => {
+    setActionError("");
+    try {
+      await cancelSignup(id, shiftId, mySignups[shiftId]);
+      const updated = { ...mySignups };
+      delete updated[shiftId];
+      setMySignups(updated);
+      load();
+    } catch (err) {
+      setActionError(err.response?.data?.message || "Cancel failed.");
+    }
   };
 
   if (!program) return <p>Loading...</p>;
@@ -89,17 +123,44 @@ export default function ProgramDetail() {
        )}
 
       <h3 className="text-lg font-semibold text-gray-900">Shifts</h3>
+      {actionError && (
+        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg mb-3">{actionError}</p>
+      )}
+
       <ul className="space-y-2">
-        {shifts.map((s) => (
-            <li key={s._id} className="bg-white border rounded-xl p-4 flex items-center justify-between hover:border-indigo-300 hover:shadow-md transition">
-            <div>
-                <p className="font-medium text-gray-900">{s.date.slice(0, 10)} at {s.startTime}</p>
-                <p className="text-sm text-gray-500">{s.location} · {s.requiredHeadcount} needed</p>
-            </div>
-            <FillStateBadge status={s.status} />
+        {shifts.map((s) => {
+          const mySignupId = mySignups[s._id];
+          const canSignUp = user.role === "volunteer" && !mySignupId && (s.status === "Open" || s.status === "Partially Filled");
+
+          return (
+            <li key={s._id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between hover:shadow-sm transition">
+              <div>
+                <p className="font-medium text-slate-900">{s.date.slice(0, 10)} at {s.startTime}</p>
+                <p className="text-sm text-slate-500">{s.location} · {s.requiredHeadcount} needed</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <FillStateBadge status={s.status} />
+                {user.role === "volunteer" && mySignupId && s.status !== "Closed" && (
+                  <button
+                    onClick={() => handleCancel(s._id)}
+                    className="text-sm text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
+                  >
+                    Cancel
+                  </button>
+                )}
+                {canSignUp && (
+                  <button
+                    onClick={() => handleSignUp(s._id)}
+                    className="text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700 transition"
+                  >
+                    Sign Up
+                  </button>
+                )}
+              </div>
             </li>
-        ))}
-        </ul>
+          );
+        })}
+      </ul>
     </div>
   );
 }
