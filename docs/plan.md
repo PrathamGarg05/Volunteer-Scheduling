@@ -10,10 +10,12 @@
 
 ## What did you estimate versus what it actually took?
 
-Day 1 (planned 2h): scaffolding + models + auth took longer than the original plan of 2 hours. It took about 2.5 hours mainly becuase of designing the schema. Actual auth logic took less time once started.
+Session 1 (planned 2h): scaffolding + models + auth took longer than the original plan of 2 hours. It took about 2.5 hours mainly becuase of designing the schema. Actual auth logic took less time once started.
 
-Day 2 (planned 3h, covering program CRUD, membership, shift CRUD, and frontend scaffold): backend CRUD (programs, membership, shifts) went below estimate. Frontend auth flow + basic UI + Tailwind styling ended up spilling past the original Day 2 slot and into a later session, since the original 3h block only budgeted for a bare scaffold, not a full auth context + protected routing + styled pages. Total it  took around 3.5 hours
+Session 2 (planned 3h, covering program CRUD, membership, shift CRUD, and frontend scaffold): backend CRUD (programs, membership, shifts) went below estimate. Frontend auth flow + basic UI + Tailwind styling ended up spilling past the original Day 2 slot and into a later session, since the original 3h block only budgeted for a bare scaffold, not a full auth context + protected routing + styled pages. Total it took around 3 hours
+
+Session 3 (planned as lifecycle + search, 2h): this session ended up covering the major part — fill-state derivation with unit tests, signup/cancel with the cross-program overlap check, manual shift close, immutable history (timeline view + coordinator notes), cross-program search with pagination, plus frontend for shift signups. Took around 2.5 hours, mainly due to search testing.
 
 ## What did you cut when you ran short?
 
-*To be filled in on Day 5, once it's known whether anything actually needed cutting.*
+*To be filled in on last day, once it's known whether anything actually needed cutting.*

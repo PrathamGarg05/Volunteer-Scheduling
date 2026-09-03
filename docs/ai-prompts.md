@@ -253,3 +253,18 @@ Realized mid-build that the shift list endpoint alone was insufficient for the U
 already signed up for this" — needed a dedicated small endpoint rather than trying to infer it
 client-side. Not a wrong output, but a gap surfaced only once actually building the UI against the
 existing API.
+
+## Cross-program shift search
+
+### Prompt
+Asked for server-side search across all shifts a viewer can see, with text search over program name +
+location, filters for program/status/date range, sort by date/startTime/fill-state, and pagination with
+total count — explicitly no in-memory filtering.
+
+### What you got
+An aggregation-pipeline-based service using $lookup (to join Program for name search and archived
+filtering), $match, a computed statusRank field for defined fill-state ordering, and $facet to get
+paginated results + total count in one query.
+
+### What you corrected
+Nothing wrong in the logic. Tested the filtering using Postman to check the aggregated filtering.
