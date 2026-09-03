@@ -7,6 +7,7 @@ import shiftRoutes from "./routes/shift.routes.js";
 import signupRoutes from "./routes/signup.routes.js";
 import shiftEventRoutes from "./routes/shiftEvent.routes.js";
 import shiftSearchRoutes from "./routes/shiftSearch.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 const app = express();
 app.use(cors());
@@ -24,5 +25,6 @@ app.use("/api/programs/:id/shifts", shiftRoutes);
 app.use("/api/programs/:id/shifts/:shiftId/signups", signupRoutes);
 app.use("/api/programs/:id/shifts/:shiftId/events", shiftEventRoutes);
 app.use("/api/shifts", shiftSearchRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 export default app;
