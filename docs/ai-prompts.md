@@ -285,3 +285,18 @@ json2csv to format output).
 Nothing wrong in the logic. Confirmed the roster export correctly excludes cancelled signups from hour
 totals by filtering status: "active" — tested by cancelling a signup and re-exporting to confirm the
 hours dropped.
+
+## Dashboard aggregation and chart
+
+### Prompt
+Asked for headline counts (shifts/open shifts/signups/closed shifts this week), breakdown by fill
+state and by program, and an 8-week signups trend — all as MongoDB aggregation pipelines scoped by
+role (volunteer sees only their programs), plus a React dashboard page using recharts for the bar chart.
+
+### What you got
+dashboard.service.js with four aggregation functions, a controller running them concurrently via
+Promise.all, and Dashboard.jsx with stat cards, a fill-state breakdown, a per-program breakdown, and
+a bar chart.
+
+### What you corrected
+Found a bug where the bar chart didn't show any signups. Found out it maybe due to timezone difference between MongoDB's operator(time in UTC), and JS operator which operatoes in the machine's timezone(IST). Working towards resolving it.
