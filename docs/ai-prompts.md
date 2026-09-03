@@ -268,3 +268,20 @@ paginated results + total count in one query.
 
 ### What you corrected
 Nothing wrong in the logic. Tested the filtering using Postman to check the aggregated filtering.
+
+## Recurring generator and CSV export
+
+### Prompt
+Asked for a bulk shift generator from a weekly pattern (day, time, duration, location, headcount) over
+a date range with holiday exclusion, reporting created vs skipped dates with reasons, plus a CSV roster
+export of volunteer hours per program.
+
+### What you got
+recurring.service.js (date-stepping loop, holiday-set lookup, duplicate detection via an existing-shift
+query) and csv.service.js (aggregates active signups per member, sums shift duration into hours, uses
+json2csv to format output).
+
+### What you corrected
+Nothing wrong in the logic. Confirmed the roster export correctly excludes cancelled signups from hour
+totals by filtering status: "active" — tested by cancelling a signup and re-exporting to confirm the
+hours dropped.
