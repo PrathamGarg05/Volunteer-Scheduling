@@ -6,15 +6,13 @@ import Program from "../models/Program.js";
 
 // Calendar week: Monday 00:00 to the following Monday 00:00.
 function getWeekBounds(date = new Date()) {
-  const d = new Date(date);
-  const day = d.getDay(); // 0=Sun, 1=Mon, ...
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  const weekStart = new Date(d);
-  weekStart.setDate(d.getDate() + diffToMonday);
-  weekStart.setHours(0, 0, 0, 0);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
-  return { weekStart, weekEnd };
+    const d = new Date(date);
+    const day = d.getUTCDay(); // UTC day-of-week, not local
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const weekStart = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate() + diffToMonday));
+    const weekEnd = new Date(weekStart);
+    weekEnd.setUTCDate(weekStart.getUTCDate() + 7);
+    return { weekStart, weekEnd };
 }
 
 function scopeFilter(programIds) {
@@ -83,34 +81,33 @@ export async function getBreakdownByProgram(programIds) {
 }
 
 export async function getWeeklySignupTrend(programIds) {
-  const { weekStart: currentWeekStart } = getWeekBounds();
-  const eightWeeksAgo = new Date(currentWeekStart);
-  eightWeeksAgo.setDate(eightWeeksAgo.getDate() - 7 * 7); // 7 prior weeks + current = 8
-
-  const matchStage = { createdAt: { $gte: eightWeeksAgo } };
-
-  const pipeline = [
-    { $lookup: { from: "shifts", localField: "shift", foreignField: "_id", as: "shiftInfo" } },
-    { $unwind: "$shiftInfo" },
-    { $match: programIds
-        ? { ...matchStage, "shiftInfo.program": { $in: programIds.map((id) => new mongoose.Types.ObjectId(id)) } }
-        : matchStage },
-    { $group: {
-        _id: { $dateTrunc: { date: "$createdAt", unit: "week", startOfWeek: "monday" } },
-        count: { $sum: 1 },
-      } },
-    { $sort: { _id: 1 } },
-  ];
-
-  const results = await Signup.aggregate(pipeline);
-
-  // fill in weeks with zero signups so the chart has all 8 points, not just the ones with data
-  const weeks = [];
-  for (let i = 7; i >= 0; i--) {
-    const weekStart = new Date(currentWeekStart);
-    weekStart.setDate(weekStart.getDate() - i * 7);
-    const match = results.find((r) => r._id.getTime() === weekStart.getTime());
-    weeks.push({ weekStart: weekStart.toISOString().slice(0, 10), count: match?.count || 0 });
-  }
-  return weeks;
+    const { weekStart: currentWeekStart } = getWeekBounds();
+    const eightWeeksAgo = new Date(currentWeekStart);
+    eightWeeksAgo.setUTCDate(eightWeeksAgo.getUTCDate() - 7 * 7);
+  
+    const matchStage = { createdAt: { $gte: eightWeeksAgo } };
+  
+    const pipeline = [
+      { $lookup: { from: "shifts", localField: "shift", foreignField: "_id", as: "shiftInfo" } },
+      { $unwind: "$shiftInfo" },
+      { $match: programIds
+          ? { ...matchStage, "shiftInfo.program": { $in: programIds.map((id) => new mongoose.Types.ObjectId(id)) } }
+          : matchStage },
+      { $group: {
+          _id: { $dateTrunc: { date: "$createdAt", unit: "week", startOfWeek: "monday", timezone: "UTC" } },
+          count: { $sum: 1 },
+        } },
+      { $sort: { _id: 1 } },
+    ];
+  
+    const results = await Signup.aggregate(pipeline);
+  
+    const weeks = [];
+    for (let i = 7; i >= 0; i--) {
+      const weekStart = new Date(currentWeekStart);
+      weekStart.setUTCDate(weekStart.getUTCDate() - i * 7);
+      const match = results.find((r) => r._id.getTime() === weekStart.getTime());
+      weeks.push({ weekStart: weekStart.toISOString().slice(0, 10), count: match?.count || 0 });
+    }
+    return weeks;
 }
