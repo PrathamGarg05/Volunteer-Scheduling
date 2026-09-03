@@ -73,3 +73,13 @@
   existing coordinator promoting a user. For this assignment, self-select keeps registration simple and
   lets a reviewer create test accounts of either role directly, not solely dependent on seeded demo
   credentials.
+
+  ## Decision 8
+
+- **Chose:** Dashboard is visible to both roles, and its counts (signups, breakdown by state/program)
+  aggregate across everyone in the viewer's scoped programs, not just the logged-in user's own activity.
+- **Rejected:** Restricting the dashboard to coordinators only, or scoping counts to "my own signups."
+- **Why:** Goal 8 doesn't restrict the dashboard by role, and a headline metric like "signups this week"
+  is describing overall program activity, which is useful to a volunteer too. No individual identity is
+  exposed in any dashboard response — only counts — so there's no privacy concern in aggregating across
+  all members of a program the volunteer already belongs to.

@@ -300,3 +300,21 @@ a bar chart.
 
 ### What you corrected
 Found a bug where the bar chart didn't show any signups. Found out it maybe due to timezone difference between MongoDB's operator(time in UTC), and JS operator which operatoes in the machine's timezone(IST). Working towards resolving it.
+
+## Bug: dashboard chart showing zero signups despite real data
+
+### Prompt
+Reported the weekly signup chart was blank even after signing up for shifts.
+
+### What you got (the original, wrong version)
+getWeekBounds computed week-start timestamps using local time (setHours), while MongoDB's $dateTrunc
+defaults to UTC — so the JS-side week labels and the MongoDB-side week groupings never matched on
+.getTime(), and every week silently fell back to a count of 0, even though the underlying aggregation
+had grouped and counted the real signups correctly.
+
+### What you corrected
+Rewrote getWeekBounds to compute entirely in UTC (Date.UTC, getUTCDay, setUTCDate), and added an
+explicit timezone: "UTC" to the $dateTrunc stage, so both sides of the week-matching comparison are
+anchored to the same timezone. Also logged Decision 12 clarifying that the dashboard is intentionally
+visible to both roles and aggregates across all of a viewer's program members, not just their own
+activity — confirmed this wasn't a data-scoping bug after re-reading the code.
