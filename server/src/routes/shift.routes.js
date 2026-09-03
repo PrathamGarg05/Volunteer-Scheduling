@@ -9,6 +9,7 @@ import {
   deleteShift,
   closeShift
 } from "../controllers/shift.controller.js";
+import { createRecurringShifts } from "../controllers/recurring.controller.js";
 
 const router = express.Router({ mergeParams: true });
 
@@ -18,5 +19,6 @@ router.get("/:shiftId", requireAuth, getShiftById);
 router.put("/:shiftId", requireAuth, requireRole("coordinator"), updateShift);
 router.delete("/:shiftId", requireAuth, requireRole("coordinator"), deleteShift);
 router.patch("/:shiftId/close", requireAuth, requireRole("coordinator"), closeShift);
+router.post("/recurring", requireAuth, requireRole("coordinator"), createRecurringShifts);
 
 export default router;

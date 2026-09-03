@@ -10,6 +10,7 @@ import {
     restoreProgram,
 } from "../controllers/program.controller.js";
 import { getMySignupsForProgram } from '../controllers/signup.controller.js';
+import { exportRoster } from '../controllers/csv.controller.js';
 
 const router = express.Router();
 
@@ -20,5 +21,6 @@ router.put("/:id", requireAuth, requireRole("coordinator"), updateProgram);
 router.patch("/:id/archive", requireAuth, requireRole("coordinator"), archiveProgram);
 router.patch("/:id/restore", requireAuth, requireRole("coordinator"), restoreProgram);
 router.get("/:id/signups/mine", requireAuth, getMySignupsForProgram);
+router.get("/:id/roster.csv", requireAuth, requireRole("coordinator"), exportRoster);
 
 export default router;
