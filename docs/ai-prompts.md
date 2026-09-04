@@ -409,3 +409,16 @@ download, since CSV responses need axios's responseType: "blob" rather than the 
 
 ### What you corrected
 A small bug in code where the recurring formm didn't reset after submmission, solved by calling setForm() in the handler — this was the last missing piece of frontend coverage for Goal 7, whose backend had already been built and tested earlier.
+
+## Understaffed alerts
+
+### Prompt
+Asked for the alerts computation (date within 3 days AND status Open/Partially Filled), a
+dismiss endpoint, and the reappear rule from Decision 4 — using AlertDismissal.stateEnteredAt to scope
+a dismissal to a specific "understaffed episode" rather than the shift permanently.
+
+### What you got
+alerts.service.js with getUnderstaffedShifts and dismissAlert, using a helper that finds when a shift's
+current status began by querying its most recent matching ShiftEvent. Frontend: an Alerts page and a
+polling nav badge (refetches every 30s).
+

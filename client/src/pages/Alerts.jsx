@@ -9,7 +9,11 @@ export default function Alerts() {
 
   const load = () => getAlerts().then((res) => setAlerts(res.data.alerts));
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 15000); // refresh every 15s while this page is open
+    return () => clearInterval(interval);
+  }, []);
 
   const handleDismiss = async (shiftId) => {
     await dismissAlert(shiftId);
