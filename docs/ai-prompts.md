@@ -422,3 +422,9 @@ alerts.service.js with getUnderstaffedShifts and dismissAlert, using a helper th
 current status began by querying its most recent matching ShiftEvent. Frontend: an Alerts page and a
 polling nav badge (refetches every 30s).
 
+### What you corrected
+Alerts.jsx fetched data once in useEffect on mount and never again, unlike the nav badge which already
+polled every 30s — so the underlying reappear logic was working correctly (confirmed via the badge
+count updating on its own), but the Alerts page itself had no mechanism to pick up the change without
+a full remount.Added the same setInterval-based polling pattern (with cleanup via clearInterval) already used in
+NavBar.jsx, at a shorter 15s interval since this is the page someone's actively watching.
