@@ -23,6 +23,8 @@ once implementation surfaces a bad suggestion; the likely candidate is the overl
 
 ## Mongoose model implementation
 
+
+
 ### Prompt
 
 Asked for all 7 Mongoose models generated in ES6 module syntax, matching schema.md's field list and
@@ -42,6 +44,8 @@ committing.
 
 ## Auth implementation and testing
 
+
+
 ### Prompt
 
 Asked for register/login controllers (bcrypt hashing, JWT issuing), a requireAuth middleware to verify
@@ -60,6 +64,8 @@ confirmed passwordHash never appears in any response, and both role types can re
 valid token.
 
 ## Program CRUD
+
+
 
 ### Prompt
 
@@ -82,6 +88,8 @@ volunteer sees empty array pre-membership), get-by-id (volunteer correctly block
 program), archive/restore (correctly hidden/shown from default list). All passed on first implementation.
 
 ## Program membership
+
+
 
 ### Prompt
 
@@ -107,6 +115,8 @@ branches in getPrograms.
 
 ## Shift CRUD
 
+
+
 ### Prompt
 
 Asked for shift create/read/update/delete routes nested under a program, coordinator-only for writes,
@@ -130,6 +140,8 @@ shifts, non-member volunteer gets 403), update, delete — all as expected.
 
 ## Frontend auth flow and basic UI
 
+
+
 ### Prompt
 
 Asked for a React auth context (login/logout, localStorage-backed), a ProtectedRoute wrapper for
@@ -149,6 +161,8 @@ not the actual security boundary — the server-side requireRole middleware (alr
 to a volunteer.
 
 ## Tailwind CSS setup and styling pass
+
+
 
 ### Prompt
 
@@ -171,6 +185,8 @@ each input. Applied the same fix to the program-creation form.
 
 ## Fill-state unit tests
 
+
+
 ### Prompt
 
 Asked for the fill-state derivation unit tests covering the exact boundary cases (zero
@@ -186,6 +202,8 @@ signups, exact match, headcount of 1, over-capacity).
 Nothing wrong in the logic. Understood unit tests.
 
 ## Signup, overlap check, and shift lifecycle
+
+
 
 ### Prompt
 
@@ -205,50 +223,65 @@ Found 2 bugs while testing which were resolved and logged below.
 
 ## Bug: cancel didn't validate signup-shift relationship
 
+
+
 ### Prompt
+
 Reported that cancelling with a mismatched shiftId/signupId pair in the URL still returned "already
 cancelled" instead of a not-belonging error, discovered through manual testing, not from an AI-flagged
 issue.
 
 ### What you got (the original, wrong version)
+
 cancelSignup fetched the Signup by signupId alone and never cross-checked it against the shiftId also
 present in the nested route path, so an inconsistent URL silently "worked" as long as the signupId
 itself was valid.
 
 ### What you corrected
+
 Added an explicit check that signup.shift matches the shiftId param before proceeding, returning 400
 if not. Generalized takeaway: any route with multiple related ids in its path needs an explicit
 consistency check between them — the nesting implies a relationship the code has to actually verify.
 
 ## Bug: updating headcount didn't re-derive fill state
 
+
+
 ### Prompt
+
 Reported that reducing/increasing a shift's requiredHeadcount after it was already Filled didn't
 change its status, even with the signup count now below the new headcount.
 
 ### What you got (the original, wrong version)
+
 updateShift's original code (written on Day 2, before Signup or fillState.service.js existed) had a
 comment flagging this exact gap as something to revisit once those existed — and it was never revisited
 until this manual test surfaced it as a live bug.
 
 ### What you corrected
+
 Added a re-derivation step inside updateShift: when requiredHeadcount changes, recount active signups,
 call deriveFillState, and log a state_change ShiftEvent if the status actually changed. This closes a
 gap that was flagged in a code comment weeks earlier but not acted on until testing caught it.
 
 ## Signup/cancel frontend
 
+
+
 ### Prompt
+
 Asked for the frontend signup and cancel flow for shifts, including how to track whether the logged-in
 volunteer already holds a signup for each shift shown in the list.
 
 ### What you got
+
 A small new backend endpoint (getMySignupsForProgram) since the existing shift list had no way to
 convey a viewer's own signup status, plus signups.api.js and updated ProgramDetail.jsx with a
 mySignups state map, sign up / cancel buttons conditionally rendered based on role, signup status,
 and shift fill-state.
 
 ### What you corrected
+
 Realized mid-build that the shift list endpoint alone was insufficient for the UI to know "have I
 already signed up for this" — needed a dedicated small endpoint rather than trying to infer it
 client-side. Not a wrong output, but a gap surfaced only once actually building the UI against the
@@ -256,32 +289,42 @@ existing API.
 
 ## Cross-program shift search
 
+
+
 ### Prompt
+
 Asked for server-side search across all shifts a viewer can see, with text search over program name +
 location, filters for program/status/date range, sort by date/startTime/fill-state, and pagination with
 total count — explicitly no in-memory filtering.
 
 ### What you got
+
 An aggregation-pipeline-based service using $lookup (to join Program for name search and archived
 filtering), $match, a computed statusRank field for defined fill-state ordering, and $facet to get
 paginated results + total count in one query.
 
 ### What you corrected
+
 Nothing wrong in the logic. Tested the filtering using Postman to check the aggregated filtering.
 
 ## Recurring generator and CSV export
 
+
+
 ### Prompt
+
 Asked for a bulk shift generator from a weekly pattern (day, time, duration, location, headcount) over
 a date range with holiday exclusion, reporting created vs skipped dates with reasons, plus a CSV roster
 export of volunteer hours per program.
 
 ### What you got
+
 recurring.service.js (date-stepping loop, holiday-set lookup, duplicate detection via an existing-shift
 query) and csv.service.js (aggregates active signups per member, sums shift duration into hours, uses
 json2csv to format output).
 
 ### What you corrected
+
 Nothing wrong in the logic. Confirmed the roster export correctly excludes cancelled signups from hour
 totals by filtering status: "active" — tested by cancelling a signup and re-exporting to confirm the
 hours dropped.
@@ -289,32 +332,66 @@ hours dropped.
 ## Dashboard aggregation and chart
 
 ### Prompt
+
 Asked for headline counts (shifts/open shifts/signups/closed shifts this week), breakdown by fill
 state and by program, and an 8-week signups trend — all as MongoDB aggregation pipelines scoped by
 role (volunteer sees only their programs), plus a React dashboard page using recharts for the bar chart.
 
 ### What you got
+
 dashboard.service.js with four aggregation functions, a controller running them concurrently via
 Promise.all, and Dashboard.jsx with stat cards, a fill-state breakdown, a per-program breakdown, and
 a bar chart.
 
 ### What you corrected
+
 Found a bug where the bar chart didn't show any signups. Found out it maybe due to timezone difference between MongoDB's operator(time in UTC), and JS operator which operatoes in the machine's timezone(IST). Working towards resolving it.
 
 ## Bug: dashboard chart showing zero signups despite real data
 
 ### Prompt
+
 Reported the weekly signup chart was blank even after signing up for shifts.
 
 ### What you got (the original, wrong version)
+
 getWeekBounds computed week-start timestamps using local time (setHours), while MongoDB's $dateTrunc
 defaults to UTC — so the JS-side week labels and the MongoDB-side week groupings never matched on
 .getTime(), and every week silently fell back to a count of 0, even though the underlying aggregation
 had grouped and counted the real signups correctly.
 
 ### What you corrected
+
 Rewrote getWeekBounds to compute entirely in UTC (Date.UTC, getUTCDay, setUTCDate), and added an
 explicit timezone: "UTC" to the $dateTrunc stage, so both sides of the week-matching comparison are
 anchored to the same timezone. Also logged Decision 12 clarifying that the dashboard is intentionally
 visible to both roles and aggregates across all of a viewer's program members, not just their own
 activity — confirmed this wasn't a data-scoping bug after re-reading the code.
+
+## Shift timeline frontend
+
+### Prompt
+Asked for the frontend to view a shift's event timeline (expandable per shift, not a separate page)
+and a coordinator-only note-adding form, wired to the already-built timeline/notes backend.
+
+### What you got
+ShiftTimeline.jsx as a collapsible panel embedded per shift row in ProgramDetail, showing chronological
+events with actor names, plus a note form visible only to coordinators.
+
+### What you corrected
+Nothing wrong in the code.
+
+## Cross-program search frontend
+
+### Prompt
+Asked for the frontend filter/sort/pagination UI for the search endpoint, matching the query params the
+backend already accepts (search text, program, status, date range, sort, page).
+
+### What you got
+ShiftSearch.jsx with a filter bar and paginated results list, resetting to page 1 whenever any filter
+changes so stale pagination state doesn't produce an empty or confusing page.
+
+### What you corrected
+Found that the /search route was missing from App.jsx entirely — a routing config gap, not a bug in
+the search page itself. Diagnosed via the "no routes match /search" console warning and fixed by adding
+the missing <Route> and import.
