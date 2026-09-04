@@ -7,6 +7,7 @@ import ProgramsList from './pages/ProgramList.jsx';
 import ProgramDetail from './pages/ProgramDetails.jsx';
 import NavBar from './components/NavBar.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import ShiftSearch from './pages/ShiftSearch.jsx';
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
               <Route path="/programs/:id" element={<ProtectedRoute><ProgramDetail /></ProtectedRoute>} />
               <Route path="/" element={<Navigate to="/programs" replace />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>}/>
+              <Route path="/search" element={<ProtectedRoute><ShiftSearch /></ProtectedRoute>} />
             </Routes>
           </div>
         </main>

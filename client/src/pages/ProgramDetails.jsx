@@ -5,6 +5,7 @@ import { getShiftsByProgram, createShift } from "../api/shifts.api.js";
 import { signUpForShift, cancelSignup, getMySignups } from "../api/signups.api.js";
 import { useAuth } from "../hooks/useAuth.js";
 import FillStateBadge from "../components/FillStateBadge.jsx";
+import ShiftTimeline from "../components/ShiftTimeline.jsx";
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function ProgramDetail() {
   const [mySignups, setMySignups] = useState({});
   const [actionError, setActionError] = useState("");
   const [form, setForm] = useState({ date: "", startTime: "", durationMinutes: "", location: "", requiredHeadcount: "" });
+  const [expandedShiftId, setExpandedShiftId] = useState(null);
   const { user } = useAuth();
 
   const load = async () => {
@@ -130,33 +132,75 @@ export default function ProgramDetail() {
       <ul className="space-y-2">
         {shifts.map((s) => {
           const mySignupId = mySignups[s._id];
-          const canSignUp = user.role === "volunteer" && !mySignupId && (s.status === "Open" || s.status === "Partially Filled");
+          const canSignUp =
+            user.role === "volunteer" &&
+            !mySignupId &&
+            (s.status === "Open" || s.status === "Partially Filled");
 
           return (
-            <li key={s._id} className="bg-white border border-slate-200 rounded-xl p-4 flex items-center justify-between hover:shadow-sm transition">
-              <div>
-                <p className="font-medium text-slate-900">{s.date.slice(0, 10)} at {s.startTime}</p>
-                <p className="text-sm text-slate-500">{s.location} · {s.requiredHeadcount} needed</p>
+            <li
+              key={s._id}
+              className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-sm transition"
+            >
+              {/* Main shift row */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-slate-900">
+                    {s.date.slice(0, 10)} at {s.startTime}
+                  </p>
+
+                  <p className="text-sm text-slate-500">
+                    {s.location} · {s.requiredHeadcount} needed
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <FillStateBadge status={s.status} />
+
+                  {user.role === "volunteer" &&
+                    mySignupId &&
+                    s.status !== "Closed" && (
+                      <button
+                        onClick={() => handleCancel(s._id)}
+                        className="text-sm text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
+                      >
+                        Cancel
+                      </button>
+                    )}
+
+                  {canSignUp && (
+                    <button
+                      onClick={() => handleSignUp(s._id)}
+                      className="text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700 transition"
+                    >
+                      Sign Up
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <FillStateBadge status={s.status} />
-                {user.role === "volunteer" && mySignupId && s.status !== "Closed" && (
-                  <button
-                    onClick={() => handleCancel(s._id)}
-                    className="text-sm text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
-                  >
-                    Cancel
-                  </button>
-                )}
-                {canSignUp && (
-                  <button
-                    onClick={() => handleSignUp(s._id)}
-                    className="text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700 transition"
-                  >
-                    Sign Up
-                  </button>
-                )}
-              </div>
+
+              {/* Timeline toggle */}
+              <button
+                onClick={() =>
+                  setExpandedShiftId(
+                    expandedShiftId === s._id ? null : s._id
+                  )
+                }
+                className="text-xs text-slate-400 hover:text-indigo-600 mt-2"
+              >
+                {expandedShiftId === s._id
+                  ? "Hide timeline"
+                  : "View timeline"}
+              </button>
+
+              {/* Timeline */}
+              {expandedShiftId === s._id && (
+                <ShiftTimeline
+                  programId={id}
+                  shiftId={s._id}
+                  onClose={() => setExpandedShiftId(null)}
+                />
+              )}
             </li>
           );
         })}
