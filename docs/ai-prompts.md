@@ -395,3 +395,17 @@ changes so stale pagination state doesn't produce an empty or confusing page.
 Found that the /search route was missing from App.jsx entirely — a routing config gap, not a bug in
 the search page itself. Diagnosed via the "no routes match /search" console warning and fixed by adding
 the missing <Route> and import.
+
+## Recurring generator and CSV export frontend
+
+### Prompt
+Asked for the frontend for the recurring shift generator (weekly pattern form + created/skipped report
+display) and a CSV roster download button, given the backend for both already existed and was tested
+via Postman.
+
+### What you got
+RecurringGeneratorForm.jsx (form + report rendering) and RosterExportButton.jsx (blob-based file
+download, since CSV responses need axios's responseType: "blob" rather than the default JSON parsing).
+
+### What you corrected
+A small bug in code where the recurring formm didn't reset after submmission, solved by calling setForm() in the handler — this was the last missing piece of frontend coverage for Goal 7, whose backend had already been built and tested earlier.
