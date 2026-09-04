@@ -6,6 +6,8 @@ import { signUpForShift, cancelSignup, getMySignups } from "../api/signups.api.j
 import { useAuth } from "../hooks/useAuth.js";
 import FillStateBadge from "../components/FillStateBadge.jsx";
 import ShiftTimeline from "../components/ShiftTimeline.jsx";
+import RecurringGeneratorForm from "../components/RecurringGeneratorForm.jsx";
+import RosterExportButton from "../components/RosterExportButton.jsx";
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -71,57 +73,64 @@ export default function ProgramDetail() {
       <p>{program.description}</p>
 
       {user.role === "coordinator" && (
-        <form onSubmit={handleCreateShift} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-slate-700 mb-4">Add a shift</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Date</label>
-                <input
-                type="date" value={form.date}
-                onChange={(e) => setForm({ ...form, date: e.target.value })} required
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-            </div>
-            <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Start time</label>
-                <input
-                type="time" value={form.startTime}
-                onChange={(e) => setForm({ ...form, startTime: e.target.value })} required
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-            </div>
-            <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Duration (min)</label>
-                <input
-                type="number" min="1" value={form.durationMinutes}
-                onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })} required
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-            </div>
-            <div className="sm:col-span-2 lg:col-span-1">
-                <label className="block text-xs font-medium text-slate-500 mb-1">Location</label>
-                <input
-                value={form.location}
-                onChange={(e) => setForm({ ...form, location: e.target.value })} required
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-            </div>
-            <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1">Headcount needed</label>
-                <input
-                type="number" min="1" value={form.requiredHeadcount}
-                onChange={(e) => setForm({ ...form, requiredHeadcount: e.target.value })} required
-                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-            </div>
-            </div>
-            <button
-            type="submit"
-            className="mt-4 w-full sm:w-auto bg-indigo-600 text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-indigo-700 transition"
-            >
-            Add Shift
-            </button>
-        </form>
+        <>
+          <RecurringGeneratorForm programId={id} onGenerated={load} />
+          <div className="flex justify-end">
+            <RosterExportButton programId={id} programName={program.name} />
+          </div>
+          <form onSubmit={handleCreateShift} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-700 mb-4">Add a shift</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Date</label>
+                  <input
+                  type="date" value={form.date}
+                  onChange={(e) => setForm({ ...form, date: e.target.value })} required
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+              </div>
+              <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Start time</label>
+                  <input
+                  type="time" value={form.startTime}
+                  onChange={(e) => setForm({ ...form, startTime: e.target.value })} required
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+              </div>
+              <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Duration (min)</label>
+                  <input
+                  type="number" min="1" value={form.durationMinutes}
+                  onChange={(e) => setForm({ ...form, durationMinutes: e.target.value })} required
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+              </div>
+              <div className="sm:col-span-2 lg:col-span-1">
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Location</label>
+                  <input
+                  value={form.location}
+                  onChange={(e) => setForm({ ...form, location: e.target.value })} required
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+              </div>
+              <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Headcount needed</label>
+                  <input
+                  type="number" min="1" value={form.requiredHeadcount}
+                  onChange={(e) => setForm({ ...form, requiredHeadcount: e.target.value })} required
+                  className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+              </div>
+              </div>
+              <button
+              type="submit"
+              className="mt-4 w-full sm:w-auto bg-indigo-600 text-white rounded-lg px-5 py-2.5 text-sm font-medium hover:bg-indigo-700 transition"
+              >
+              Add Shift
+              </button>
+          </form>
+        </>
+        
        )}
 
       <h3 className="text-lg font-semibold text-gray-900">Shifts</h3>
