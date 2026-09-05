@@ -52,12 +52,8 @@ last open spot on a shift could theoretically both succeed, over-filling it. der
 defensive >= comparison prevents the fill-state from breaking in that case, but doesn't prevent the
 over-signup itself. Acceptable risk for a demo app's realistic concurrency levels; a production
 system would need a DB-level unique constraint or transaction around the count-check-and-insert.
-- A single cross-program "My Shifts" view for volunteers. Goal 5 only requires volunteers to see every
-program and shift they belong to, which ProgramsList + ProgramDetail already satisfy by letting a
-volunteer click into any of their programs — a unified cross-program view would be a nice-to-have,
+- A single cross-program "My Shifts" view for volunteers. Goal 5 only requires volunteers to see every  
+program and shift they belong to, which ProgramsList + ProgramDetail already satisfy by letting a  
+volunteer click into any of their programs — a unified cross-program view would be a nice-to-have,  
 not a required goal, and wasn't built given the time budget.
-- Alerts.getUnderstaffedShifts runs a small N+1 query sequence (per-shift lookups for its current
-state-entry timestamp and matching dismissal) rather than a single batched aggregation. Acceptable
-at demo data volumes; the first thing to optimize if this needed to scale to hundreds of understaffed
-shifts at once.
 

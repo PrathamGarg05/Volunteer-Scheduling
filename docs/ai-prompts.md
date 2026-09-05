@@ -475,3 +475,20 @@ to populate an "add member" dropdown.
 Added user.controller.js/listVolunteers (coordinator-only), and ProgramMembers.jsx with an add-member
 dropdown (filtered to exclude existing members) and a remove button per member. This closes the last
 required-goal action that had no UI.
+
+## Fixing the alerts N+1 query pattern
+
+### Prompt
+Had flagged getUnderstaffedShifts as running a per-shift sequence of queries (an N+1 pattern) in an
+earlier session, documented as an accepted limitation. Decided to actually fix it rather than leave it
+documented, since the fix was straightforward once identified.
+
+### What you got
+Rewrote the function to run exactly 3 queries total regardless of how many shifts are understaffed:
+one for the shifts, one for all their relevant events, one for all their dismissals — then matched
+everything using in-memory Map lookups instead of further database round trips. Same matching logic
+and stateEnteredAt semantics as before, just restructured around batched fetching.
+
+### What you corrected
+Nothing wrong in the new logic — verified by re-running the full alerts test suite (including the
+reappear scenario) and confirming identical behavior to the pre-optimization version.
