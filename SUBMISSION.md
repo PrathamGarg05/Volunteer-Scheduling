@@ -11,9 +11,8 @@
 can take 30-60 seconds. A cron job pings `/health` every 10 minutes to reduce how often this is hit,
 but if the app has been idle longer than that, the first request may still be slow. Please wait a
 moment on first load rather than assuming it's broken.
-- Dashboard and Alerts are noticeably slower than other pages — partly Render's cold start, but also
-because Alerts currently runs a small sequence of queries per understaffed shift rather than one 
-batched query, and Dashboard runs four separate aggregations per load. Fine at demo
+- Dashboard is noticeably slower than other pages — partly Render's cold start, but also
+because Dashboard runs four separate aggregations per load. Fine at demo
 scale; flagged in architecture.md as a real optimization target, not swept under "just hosting."
 - All 10 required goals are implemented and tested (see checklist below).
 
