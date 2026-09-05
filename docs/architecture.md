@@ -13,7 +13,14 @@ No message queue, no separate services, no websockets — plain request/response
 
 ## Where does each piece run?
 
-*To be filled in once actually deployed on Day 5 — not writing this from a plan I haven't executed yet.*
+- **Client**: Vercel (static build, deployed from `client/`)
+- **Server**: Render free-tier web service (deployed from `server/`)
+- **Database**: MongoDB Atlas, free M0 cluster
+
+The client talks to the server's public Render URL over HTTPS; the server connects to Atlas via a
+connection string in an environment variable, never committed. Render's free tier sleeps after 15
+minutes of inactivity; a cron job (cron-job.org) pings a `/health` endpoint every 10 minutes to reduce
+how often a cold start is actually hit.
 
 ## What is the request path for one representative user action, end to end?
 

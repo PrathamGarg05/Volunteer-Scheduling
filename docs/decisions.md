@@ -93,22 +93,27 @@ exposed in any dashboard response — only counts — so there's no privacy conc
 all members of a program the volunteer already belongs to.
 
 ## Decision 9
-
 - **Chose:** The Alerts page and nav badge refresh via polling (every 15s / 30s respectively) rather
-
   than an event-based refresh triggered by the exact action that changes alert-relevant data (a cancel
-
   or a state change).
-
 - **Rejected:** A shared global state/event system that notifies the Alerts page and badge immediately
-
   when a relevant action happens elsewhere in the app.
-
 - **Why:** Polling is simple, requires no new architecture, and is accurate within 15-30 seconds, which
-
   is reasonable for a coordinator checking staffing levels — nothing in this app requires sub-second
-
   real-time updates. An event-based system would add real complexity (a shared pub/sub mechanism across
-
   unrelated pages) for a marginal gain given the brief's actual requirements.
 
+## Decision 10
+
+- **Chose (originally):** Compute "this week" boundaries using JavaScript's local-time methods
+  (`setHours`), relying on the server's local timezone.
+- **Rejected (originally):** Explicitly anchoring week boundaries to UTC.
+- **Why (originally):** Seemed like the simpler, more direct approach — no reason at the time to think
+  timezone would matter for a same-machine dev/test cycle.
+- **Later reversed:** This broke the dashboard's weekly signup chart — MongoDB's `$dateTrunc` defaults
+  to UTC, so the JS-computed week boundaries and the MongoDB-side week groupings represented different
+  instants, and the chart silently returned all zeros despite real underlying data. Reversed to compute
+  everything in UTC explicitly (`Date.UTC`, `getUTCDay`, `setUTCDate`, and `timezone: "UTC"` passed to
+  `$dateTrunc`), so both sides of the comparison are anchored consistently. This is also the more
+  correct choice for a deployed app regardless of the bug, since server behavior shouldn't depend on
+  whichever timezone the host machine happens to be set to.

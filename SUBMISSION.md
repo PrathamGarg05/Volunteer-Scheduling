@@ -1,51 +1,78 @@
 # Submission
 
-
 ## Links
 
-- **GitHub repository:** <public repo URL>
-- **Live application:** <deployed URL>
+- **GitHub repository:** [https://github.com/PrathamGarg05/Volunteer-Scheduling](https://github.com/PrathamGarg05/Volunteer-Scheduling)
+- **Live application:**  [https://volunteer-scheduling-eight.vercel.app/](https://volunteer-scheduling-eight.vercel.app/)
 
 ## Notes for the reviewer
 
-<Anything we should know before opening the link — e.g. your host sleeps when idle and the first
-request can take up to a minute.>
+- The backend runs on Render's free tier, which sleeps after 15 minutes of inactivity — a cold start
+can take 30-60 seconds. A cron job pings `/health` every 10 minutes to reduce how often this is hit,
+but if the app has been idle longer than that, the first request may still be slow. Please wait a
+moment on first load rather than assuming it's broken.
+- All 10 required goals are implemented and tested (see checklist below).
+
+
 
 ## Demo credentials
 
-| Role | Email | Password |
-|------|-------|----------|
-| <role 1> | | |
-| <role 2> | | |
+
+| Role        | Email | Password |
+| ----------- | ----- | -------- |
+| Coordinator |       |          |
+| Volunteer   |       |          |
+
+
+
 
 ## Stack
 
-| Layer | What you used | Why |
-|-------|---------------|-----|
-| Frontend | | |
-| Backend | | |
-| Database | | |
-| Hosting | | |
+
+| Layer    | What you used                                                 | Why                                                                    |
+| -------- | ------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Frontend | React (Vite) + Tailwind CSS + React Router                    | Familiar stack, fast to build with, no unnecessary UI library overhead |
+| Backend  | Node.js + Express (ES6 modules)                               | Familiar stack; monolith architecture (see decisions.md #1)            |
+| Database | MongoDB Atlas (free M0)                                       | Familiar stack, flexible schema fit the varied entity shapes well      |
+| Hosting  | Vercel (frontend), Render (backend), MongoDB Atlas (database) | All free-tier; see notes above on Render cold starts                   |
+
+
+
 
 ## Goal checklist
 
-Mark each honestly. Partial is fine — say what is partial.
 
-| # | Goal | Status | Notes |
-|---|------|--------|-------|
-| 1 | | Done / Partial / Not done | |
-| 2 | | | |
-| 3 | | | |
-| 4 | | | |
-| 5 | | | |
-| 6 | | | |
-| 7 | | | |
-| 8 | | | |
-| 9 | | | |
-| 10 | | | |
+| #   | Goal                            | Status | Notes                                                                                          |
+| --- | ------------------------------- | ------ | ---------------------------------------------------------------------------------------------- |
+| 1   | Accounts and roles              | Done   | Server-side enforced via requireAuth/requireRole middleware, tested with real 403s throughout  |
+| 2   | Programs                        | Done   | CRUD + archive/restore                                                                         |
+| 3   | Shifts inside programs          | Done   | CRUD nested under programs                                                                     |
+| 4   | Shift lifecycle with rules      | Done   | Fill-state derivation, overlap check (cross-program), capacity check, manual close, all tested |
+| 5   | Program membership              | Done   | Coordinator-initiated only (see decisions.md #6)                                               |
+| 6   | Finding shifts                  | Done   | Server-side aggregation pipeline: search, filter, sort, pagination                             |
+| 7   | Recurring schedule + CSV export | Done   | Weekly pattern generator with holiday exclusion + duplicate detection; CSV roster export       |
+| 8   | Dashboard                       | Done   | Headline numbers, breakdown by state/program, 8-week signup chart                              |
+| 9   | Immutable history               | Done   | Append-only ShiftEvent collection, no update/delete route exists for it                        |
+| 10  | Understaffed alerts             | Done   | 3-day window, dismiss + reappear via AlertDismissal.stateEnteredAt scoping                     |
+
+
+
 
 ## How much time did you actually spend?
 
+About 14 hours
+
 ## What would you do next, with another 12 hours?
 
+- Add a coordinator-facing UI for signing a volunteer up on someone else's behalf (the API supports it
+via a `volunteerId` param, but only the volunteer's own self-signup flow has a UI right now).
+- Add transaction-level locking on the signup write path to close the theoretical race condition noted
+in architecture.md (two simultaneous signups for the last open spot).
+- Replace the location search's regex match with a proper `$text` index once the schema no longer needs
+to join across `Program` for it — noted in schema.md as the first thing to break at 100x data.
+- <add anything else genuinely true once Day 4/5 wrap up>
+
+
+
 ## What are you least happy with in this codebase, and why?
+
