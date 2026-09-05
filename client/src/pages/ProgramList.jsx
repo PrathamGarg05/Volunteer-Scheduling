@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPrograms, createProgram , archiveProgram, restoreProgram} from "../api/program.api.js";
+import { getPrograms, createProgram , archiveProgram, restoreProgram, updateProgram} from "../api/program.api.js";
 import { useAuth } from "../hooks/useAuth.js";
 
 export default function ProgramsList() {
@@ -8,6 +8,8 @@ export default function ProgramsList() {
   const [form, setForm] = useState({ name: "", description: "" });
   const { user } = useAuth();
   const [showArchived, setShowArchived] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({ name: "", description: "" });
 
   const loadPrograms = async () => {
     const res = await getPrograms(showArchived);
@@ -23,6 +25,18 @@ export default function ProgramsList() {
     e.preventDefault();
     await createProgram(form);
     setForm({ name: "", description: "" });
+    loadPrograms();
+  };
+
+  const startEdit = (p) => {
+    setEditingId(p._id);
+    setEditForm({ name: p.name, description: p.description });
+  };
+  
+  const handleUpdate = async (e, id) => {
+    e.preventDefault();
+    await updateProgram(id, editForm);
+    setEditingId(null);
     loadPrograms();
   };
 
@@ -68,18 +82,36 @@ export default function ProgramsList() {
       <ul className="space-y-2">
         {programs.map((p) => (
           <li key={p._id} className={`bg-white border rounded-xl overflow-hidden transition ${p.isArchived ? "border-slate-100 opacity-60" : "border-slate-200 hover:border-indigo-300 hover:shadow-md"}`}>
+          {editingId === p._id ? (
+            <form onSubmit={(e) => handleUpdate(e, p._id)} className="p-4 flex gap-2">
+              <input
+                value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} required
+                className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-sm"
+              />
+              <input
+                value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                className="flex-1 border border-slate-300 rounded-lg px-3 py-1.5 text-sm"
+              />
+              <button type="submit" className="text-xs bg-indigo-600 text-white rounded-lg px-3 py-1.5">Save</button>
+              <button type="button" onClick={() => setEditingId(null)} className="text-xs text-slate-400 px-2">Cancel</button>
+            </form>
+          ) : (
             <div className="flex items-center justify-between p-4">
               <Link to={`/programs/${p._id}`} className="flex-1">
                 <p className="font-medium text-slate-900">{p.name}</p>
                 <p className="text-sm text-slate-500">{p.description}</p>
               </Link>
               {user.role === "coordinator" && (
-                p.isArchived
-                  ? <button onClick={() => handleRestore(p._id)} className="text-xs text-indigo-600 hover:underline ml-4">Restore</button>
-                  : <button onClick={() => handleArchive(p._id)} className="text-xs text-slate-400 hover:text-red-600 ml-4">Archive</button>
+                <div className="flex items-center gap-3 ml-4">
+                  <button onClick={() => startEdit(p)} className="text-xs text-slate-400 hover:text-indigo-600">Edit</button>
+                  {p.isArchived
+                    ? <button onClick={() => handleRestore(p._id)} className="text-xs text-indigo-600 hover:underline">Restore</button>
+                    : <button onClick={() => handleArchive(p._id)} className="text-xs text-slate-400 hover:text-red-600">Archive</button>}
+                </div>
               )}
             </div>
-          </li>
+          )}
+        </li>
         ))}
       </ul>
     </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getProgramById } from "../api/program.api.js";
-import { getShiftsByProgram, createShift } from "../api/shifts.api.js";
+import { getShiftsByProgram, createShift, updateShift, deleteShift, closeShift } from "../api/shifts.api.js";
 import { signUpForShift, cancelSignup, getMySignups } from "../api/signups.api.js";
 import { useAuth } from "../hooks/useAuth.js";
 import FillStateBadge from "../components/FillStateBadge.jsx";
@@ -19,6 +19,9 @@ export default function ProgramDetail() {
   const [form, setForm] = useState({ date: "", startTime: "", durationMinutes: "", location: "", requiredHeadcount: "" });
   const [expandedShiftId, setExpandedShiftId] = useState(null);
   const { user } = useAuth();
+  const [editingShiftId, setEditingShiftId] = useState(null);
+  const [shiftEditForm, setShiftEditForm] = useState({});
+
 
   const load = async () => {
     const [progRes, shiftsRes] = await Promise.all([getProgramById(id), getShiftsByProgram(id)]);
@@ -64,6 +67,33 @@ export default function ProgramDetail() {
     } catch (err) {
       setActionError(err.response?.data?.message || "Cancel failed.");
     }
+  };
+
+  const startShiftEdit = (s) => {
+    setEditingShiftId(s._id);
+    setShiftEditForm({
+      date: s.date.slice(0, 10), startTime: s.startTime,
+      durationMinutes: s.durationMinutes, location: s.location, requiredHeadcount: s.requiredHeadcount,
+    });
+  };
+
+  const handleShiftUpdate = async (e, shiftId) => {
+    e.preventDefault();
+    await updateShift(id, shiftId, shiftEditForm);
+    setEditingShiftId(null);
+    load();
+  };
+  
+  const handleShiftDelete = async (shiftId) => {
+    if (!window.confirm("Delete this shift? This cannot be undone.")) return;
+    await deleteShift(id, shiftId);
+    load();
+  };
+  
+  const handleShiftClose = async (shiftId) => {
+    if (!window.confirm("Close this shift? This locks out any further signups or cancellations.")) return;
+    await closeShift(id, shiftId);
+    load();
   };
 
   if (!program) return <p>Loading...</p>;
@@ -143,74 +173,56 @@ export default function ProgramDetail() {
       <ul className="space-y-2">
         {shifts.map((s) => {
           const mySignupId = mySignups[s._id];
-          const canSignUp =
-            user.role === "volunteer" &&
-            !mySignupId &&
-            (s.status === "Open" || s.status === "Partially Filled");
+          const canSignUp = user.role === "volunteer" && !mySignupId && (s.status === "Open" || s.status === "Partially Filled");
+          const isEditing = editingShiftId === s._id;
 
           return (
-            <li
-              key={s._id}
-              className="bg-white border border-slate-200 rounded-xl p-4 hover:shadow-sm transition"
-            >
-              {/* Main shift row */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {s.date.slice(0, 10)} at {s.startTime}
-                  </p>
+            <li key={s._id} className="bg-white border border-slate-200 rounded-xl p-4">
+              {isEditing ? (
+                <form onSubmit={(e) => handleShiftUpdate(e, s._id)} className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <input type="date" value={shiftEditForm.date} onChange={(e) => setShiftEditForm({ ...shiftEditForm, date: e.target.value })} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
+                  <input type="time" value={shiftEditForm.startTime} onChange={(e) => setShiftEditForm({ ...shiftEditForm, startTime: e.target.value })} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
+                  <input type="number" value={shiftEditForm.durationMinutes} onChange={(e) => setShiftEditForm({ ...shiftEditForm, durationMinutes: e.target.value })} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
+                  <input value={shiftEditForm.location} onChange={(e) => setShiftEditForm({ ...shiftEditForm, location: e.target.value })} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
+                  <input type="number" value={shiftEditForm.requiredHeadcount} onChange={(e) => setShiftEditForm({ ...shiftEditForm, requiredHeadcount: e.target.value })} className="border border-slate-300 rounded-lg px-2 py-1.5 text-sm" />
+                  <div className="flex gap-2">
+                    <button type="submit" className="text-xs bg-indigo-600 text-white rounded-lg px-3 py-1.5">Save</button>
+                    <button type="button" onClick={() => setEditingShiftId(null)} className="text-xs text-slate-400 px-2">Cancel</button>
+                  </div>
+                </form>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium text-slate-900">{s.date.slice(0, 10)} at {s.startTime}</p>
+                      <p className="text-sm text-slate-500">{s.location} · {s.requiredHeadcount} needed</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <FillStateBadge status={s.status} />
+                      {user.role === "volunteer" && mySignupId && s.status !== "Closed" && (
+                        <button onClick={() => handleCancel(s._id)} className="text-sm text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition">Cancel</button>
+                      )}
+                      {canSignUp && (
+                        <button onClick={() => handleSignUp(s._id)} className="text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700 transition">Sign Up</button>
+                      )}
+                    </div>
+                  </div>
 
-                  <p className="text-sm text-slate-500">
-                    {s.location} · {s.requiredHeadcount} needed
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <FillStateBadge status={s.status} />
-
-                  {user.role === "volunteer" &&
-                    mySignupId &&
-                    s.status !== "Closed" && (
-                      <button
-                        onClick={() => handleCancel(s._id)}
-                        className="text-sm text-red-600 border border-red-200 rounded-lg px-3 py-1.5 hover:bg-red-50 transition"
-                      >
-                        Cancel
-                      </button>
-                    )}
-
-                  {canSignUp && (
-                    <button
-                      onClick={() => handleSignUp(s._id)}
-                      className="text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700 transition"
-                    >
-                      Sign Up
-                    </button>
+                  {user.role === "coordinator" && s.status !== "Closed" && (
+                    <div className="flex items-center gap-3 mt-2">
+                      <button onClick={() => startShiftEdit(s)} className="text-xs text-slate-400 hover:text-indigo-600">Edit</button>
+                      <button onClick={() => handleShiftDelete(s._id)} className="text-xs text-slate-400 hover:text-red-600">Delete</button>
+                      <button onClick={() => handleShiftClose(s._id)} className="text-xs text-slate-400 hover:text-amber-600">Close Shift</button>
+                    </div>
                   )}
-                </div>
-              </div>
 
-              {/* Timeline toggle */}
-              <button
-                onClick={() =>
-                  setExpandedShiftId(
-                    expandedShiftId === s._id ? null : s._id
-                  )
-                }
-                className="text-xs text-slate-400 hover:text-indigo-600 mt-2"
-              >
-                {expandedShiftId === s._id
-                  ? "Hide timeline"
-                  : "View timeline"}
-              </button>
-
-              {/* Timeline */}
-              {expandedShiftId === s._id && (
-                <ShiftTimeline
-                  programId={id}
-                  shiftId={s._id}
-                  onClose={() => setExpandedShiftId(null)}
-                />
+                  <button onClick={() => setExpandedShiftId(expandedShiftId === s._id ? null : s._id)} className="text-xs text-slate-400 hover:text-indigo-600 mt-2">
+                    {expandedShiftId === s._id ? "Hide timeline" : "View timeline"}
+                  </button>
+                  {expandedShiftId === s._id && (
+                    <ShiftTimeline programId={id} shiftId={s._id} onClose={() => setExpandedShiftId(null)} />
+                  )}
+                </>
               )}
             </li>
           );
