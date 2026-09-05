@@ -135,10 +135,17 @@ export const updateShift = async (req, res) => {
 
 export const deleteShift = async (req, res) => {
   try {
-    const shift = await Shift.findByIdAndDelete(req.params.shiftId);
-    if (!shift) {
-      return res.status(404).json({ message: "Shift not found." });
+    const shift = await Shift.findById(req.params.shiftId);
+    if (!shift) return res.status(404).json({ message: "Shift not found." });
+
+    const activeSignups = await Signup.countDocuments({ shift: shift._id, status: "active" });
+    if (activeSignups > 0) {
+      return res.status(400).json({
+        message: `Cannot delete: ${activeSignups} volunteer(s) currently signed up. Close the shift instead, or cancel their signups first.`,
+      });
     }
+
+    await Shift.findByIdAndDelete(req.params.shiftId);
     res.json({ message: "Shift deleted." });
   } catch (err) {
     res.status(500).json({ message: "Failed to delete shift.", error: err.message });
