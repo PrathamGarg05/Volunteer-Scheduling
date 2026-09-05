@@ -53,3 +53,7 @@ how often a cold start is actually hit.
   defensive >= comparison prevents the fill-state from breaking in that case, but doesn't prevent the
   over-signup itself. Acceptable risk for a demo app's realistic concurrency levels; a production
   system would need a DB-level unique constraint or transaction around the count-check-and-insert.
+- A single cross-program "My Shifts" view for volunteers. Goal 5 only requires volunteers to see every
+  program and shift they belong to, which ProgramsList + ProgramDetail already satisfy by letting a
+  volunteer click into any of their programs — a unified cross-program view would be a nice-to-have,
+  not a required goal, and wasn't built given the time budget.

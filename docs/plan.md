@@ -50,6 +50,17 @@ dismiss/reappear logic (the last of the 10 required goals), plus its frontend pa
 Also completed deployment: MongoDB Atlas (already provisioned from Day 1), backend to Render, frontend
 to Vercel, plus a cron job pinging /health every 10 minutes to reduce Render's free-tier cold start. Took 2 hours due to alert testing, and production testing after deployment.
 
+Session 7 (frontend coverage audit and gaps): triggered by manually testing the deployed app and
+finding archiving a program didn't work from the UI — traced back to the API route existing and being
+Postman-tested, but no frontend button ever built for it. That prompted a systematic audit of every
+coordinator-only backend route against the frontend, which surfaced three more real gaps in required-
+goal actions: managing program membership (add/remove a volunteer — a core Goal 5 action) had no UI at
+all, and editing/deleting/closing a shift (Goal 4's own "close shift" action, explicitly named in the
+brief) also had no UI, despite all of these routes being tested and working via Postman. Also found and
+fixed a genuine backend bug in the same pass: the recurring shift generator created shifts through a
+different code path than the regular create-shift route, and that path never logged a "created"
+ShiftEvent — a case of two routes doing the same underlying thing drifting out of sync. Took 40 mins.
+
 ## What did you cut when you ran short?
 
 Nothing from the 10 required goals — all ten are fully implemented, backend and frontend, and tested.
