@@ -73,7 +73,7 @@ via a `volunteerId` param, but only the volunteer's own self-signup flow has a U
 in architecture.md (two simultaneous signups for the last open spot).
 - Replace the location search's regex match with a proper `$text` index once the schema no longer needs
 to join across `Program` for it — noted in schema.md as the first thing to break at 100x data.
--Input validation layer (zod / express-validator) — right now validation looks like it's leaning on Mongoose schema validation plus manual checks in controllers. Centralizing it would catch bad payloads before they hit the DB and cut down on ad hoc if checks.
+- Input validation layer (zod / express-validator) — right now validation looks like it's leaning on Mongoose schema validation plus manual checks in controllers. Centralizing it would catch bad payloads before they hit the DB and cut down on ad hoc if checks.
 
 
 ## What are you least happy with in this codebase, and why?
