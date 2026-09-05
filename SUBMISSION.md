@@ -21,10 +21,10 @@ scale; flagged in architecture.md as a real optimization target, not swept under
 ## Demo credentials
 
 
-| Role        | Email                                                      | Password  |
-| ----------- | ---------------------------------------------------------- | --------- |
-| Coordinator | alice@demo.com                                             | Demo1234! |
-| Volunteer   | bob@demo.com, carol@demo.com, dave@demo.com,emma@demo.com | Demo1234! |
+| Role        | Email                                                                                                                                                      | Password  |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| Coordinator | [alice@demo.com](mailto:alice@demo.com)                                                                                                                    | Demo1234! |
+| Volunteer   | [bob@demo.com](mailto:bob@demo.com), [carol@demo.com](mailto:carol@demo.com), [dave@demo.com](mailto:dave@demo.com),[emma@demo.com](mailto:emma@demo.com) | Demo1234! |
 
 
 
@@ -63,7 +63,7 @@ scale; flagged in architecture.md as a real optimization target, not swept under
 
 ## How much time did you actually spend?
 
-About 15 hours
+About 16 hours
 
 ## What would you do next, with another 12 hours?
 
@@ -91,4 +91,3 @@ few file names (ProgramList.jsx, ProgramDetails.jsx, ProgramMember.jsx for a com
 plural members) don't match the naming I'd originally planned. None of these are bugs, but they're the
 kind of small friction a future maintainer — or me, in three weeks — would trip over, and I'd clean
 them up first with any additional time.
-

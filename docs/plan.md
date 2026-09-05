@@ -2,9 +2,7 @@
 
 ## How did you break the work into sessions?
 
-## How did you break the work into sessions?
-
-7 sessions total, roughly 15 hours: schema/auth foundation, core CRUD + frontend scaffold, the shift
+7 sessions total, roughly 16 hours: schema/auth foundation, core CRUD + frontend scaffold, the shift
 lifecycle + search, dashboard/recurring/CSV backend, their frontend + timeline, alerts + deployment,
 and a final frontend-coverage audit that caught several UI gaps in already-tested backend routes.
 
@@ -78,7 +76,7 @@ created shifts through a different code path than the regular create-shift route
 ShiftEvent — a case of two routes doing the same underlying thing drifting out of sync. Took 40 mins.
 
 Session 8 (Documentation and Production Testing): Completing the documentations and checking for any missed 
-functionality, or any unexpected bug which arise only in production.
+functionality, or any unexpected bug which arise only in production. Took around 1 hour.
 
 ## What did you cut when you ran short?
 
