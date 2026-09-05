@@ -12,9 +12,9 @@ can take 30-60 seconds. A cron job pings `/health` every 10 minutes to reduce ho
 but if the app has been idle longer than that, the first request may still be slow. Please wait a
 moment on first load rather than assuming it's broken.
 - Dashboard and Alerts are noticeably slower than other pages — partly Render's cold start, but also
-  because Alerts currently runs a small sequence of queries per understaffed shift rather than one 
-  batched query, and Dashboard runs four separate aggregations per load. Fine at demo
-  scale; flagged in architecture.md as a real optimization target, not swept under "just hosting."
+because Alerts currently runs a small sequence of queries per understaffed shift rather than one 
+batched query, and Dashboard runs four separate aggregations per load. Fine at demo
+scale; flagged in architecture.md as a real optimization target, not swept under "just hosting."
 - All 10 required goals are implemented and tested (see checklist below).
 
 
@@ -22,10 +22,10 @@ moment on first load rather than assuming it's broken.
 ## Demo credentials
 
 
-| Role        | Email | Password |
-| ----------- | ----- | -------- |
-| Coordinator |       |          |
-| Volunteer   |       |          |
+| Role        | Email                                                      | Password  |
+| ----------- | ---------------------------------------------------------- | --------- |
+| Coordinator | alice@demo.com                                             | Demo1234! |
+| Volunteer   | bob@demo.com, carol@demo.com, dave@demo.com,emma@demo.com | Demo1234! |
 
 
 
@@ -79,4 +79,17 @@ to join across `Program` for it — noted in schema.md as the first thing to bre
 
 
 ## What are you least happy with in this codebase, and why?
+
+The gap between "backend tested via Postman" and "actually usable end-to-end" turned out to be bigger
+than I expected, and it showed up twice in different forms. First, several coordinator-only actions
+(archiving a program, managing membership, editing/deleting/closing a shift) had fully working, tested
+API routes but no frontend for a while — I'd verified correctness at the API layer and mentally marked
+the feature "done" without checking the UI actually exposed it.
+
+I'm also not happy with some inconsistency in coding patterns that crept in over several sessions:
+updateShift uses a fetch-then-save pattern while archiveShift/restoreShift use findByIdAndUpdate, and a
+few file names (ProgramList.jsx, ProgramDetails.jsx, ProgramMember.jsx for a component that manages
+plural members) don't match the naming I'd originally planned. None of these are bugs, but they're the
+kind of small friction a future maintainer — or me, in three weeks — would trip over, and I'd clean
+them up first with any additional time.
 

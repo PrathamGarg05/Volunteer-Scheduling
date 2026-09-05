@@ -12,23 +12,6 @@ function getThreeDayWindow() {
   return { todayStart, threeDaysEnd };
 }
 
-// Finds when a shift's CURRENT status began — i.e. the timestamp of the most
-// recent event that set it to what it currently is. This is what an
-// AlertDismissal is actually scoped against, not the shift itself.
-async function getCurrentStateEnteredAt(shift) {
-  const lastMatchingChange = await ShiftEvent.findOne({
-    shift: shift._id,
-    type: "state_change",
-    newState: shift.status,
-  }).sort({ createdAt: -1 });
-
-  if (lastMatchingChange) return lastMatchingChange.createdAt;
-
-  // never changed since creation — the "created" event is when this status began
-  const createdEvent = await ShiftEvent.findOne({ shift: shift._id, type: "created" });
-  return createdEvent ? createdEvent.createdAt : shift.createdAt;
-}
-
 export async function getUnderstaffedShifts(programIds) {
   const { todayStart, threeDaysEnd } = getThreeDayWindow();
 
@@ -41,25 +24,59 @@ export async function getUnderstaffedShifts(programIds) {
   }
 
   const shifts = await Shift.find(filter).populate("program", "name").sort({ date: 1 });
+  if (shifts.length === 0) return [];
 
-  const results = [];
-  for (const shift of shifts) {
-    const stateEnteredAt = await getCurrentStateEnteredAt(shift);
+  const shiftIds = shifts.map((s) => s._id);
 
-    const dismissal = await AlertDismissal.findOne({
-      shift: shift._id,
-      stateEnteredAt,
-    });
+  // One query: every state_change + created event for all these shifts at once,
+  // newest first — lets us find each shift's "current state started at" moment
+  // by picking the first matching event per shift, in memory, instead of a
+  // separate query per shift.
+  const allEvents = await ShiftEvent.find({
+    shift: { $in: shiftIds },
+    type: { $in: ["state_change", "created"] },
+  }).sort({ createdAt: -1 });
 
-    results.push({
+  // One query: every dismissal for these shifts at once.
+  const allDismissals = await AlertDismissal.find({ shift: { $in: shiftIds } });
+
+  // Build lookup maps once, so matching each shift is O(1) instead of another query.
+  const eventsByShift = new Map();
+  for (const event of allEvents) {
+    const key = event.shift.toString();
+    if (!eventsByShift.has(key)) eventsByShift.set(key, []);
+    eventsByShift.get(key).push(event);
+  }
+
+  const dismissalsByShift = new Map();
+  for (const dismissal of allDismissals) {
+    const key = dismissal.shift.toString();
+    if (!dismissalsByShift.has(key)) dismissalsByShift.set(key, []);
+    dismissalsByShift.get(key).push(dismissal);
+  }
+
+  const results = shifts.map((shift) => {
+    const key = shift._id.toString();
+    const events = eventsByShift.get(key) || [];
+
+    // events are sorted newest-first; find the most recent one whose newState
+    // matches this shift's current status (or fall back to its "created" event).
+    const matchingChange = events.find((e) => e.type === "state_change" && e.newState === shift.status);
+    const createdEvent = events.find((e) => e.type === "created");
+    const stateEnteredAt = matchingChange ? matchingChange.createdAt : (createdEvent ? createdEvent.createdAt : shift.createdAt);
+
+    const dismissals = dismissalsByShift.get(key) || [];
+    const isDismissed = dismissals.some((d) => d.stateEnteredAt.getTime() === stateEnteredAt.getTime());
+
+    return {
       shiftId: shift._id,
       programName: shift.program.name,
       date: shift.date,
       startTime: shift.startTime,
       status: shift.status,
-      dismissed: !!dismissal,
-    });
-  }
+      dismissed: isDismissed,
+    };
+  });
 
   return results;
 }
@@ -68,10 +85,16 @@ export async function dismissAlert(shiftId, userId) {
   const shift = await Shift.findById(shiftId);
   if (!shift) throw new Error("Shift not found.");
 
-  const stateEnteredAt = await getCurrentStateEnteredAt(shift);
+  const events = await ShiftEvent.find({
+    shift: shiftId, type: { $in: ["state_change", "created"] },
+  }).sort({ createdAt: -1 });
+
+  const matchingChange = events.find((e) => e.type === "state_change" && e.newState === shift.status);
+  const createdEvent = events.find((e) => e.type === "created");
+  const stateEnteredAt = matchingChange ? matchingChange.createdAt : (createdEvent ? createdEvent.createdAt : shift.createdAt);
 
   const existing = await AlertDismissal.findOne({ shift: shiftId, stateEnteredAt });
-  if (existing) return existing; // already dismissed for this episode, no-op
+  if (existing) return existing;
 
   return AlertDismissal.create({ shift: shiftId, stateEnteredAt, dismissedBy: userId });
 }
