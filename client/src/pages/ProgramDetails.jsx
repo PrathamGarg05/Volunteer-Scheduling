@@ -8,6 +8,7 @@ import FillStateBadge from "../components/FillStateBadge.jsx";
 import ShiftTimeline from "../components/ShiftTimeline.jsx";
 import RecurringGeneratorForm from "../components/RecurringGeneratorForm.jsx";
 import RosterExportButton from "../components/RosterExportButton.jsx";
+import ProgramMembers from "../components/ProgramMember.jsx";
 
 export default function ProgramDetail() {
   const { id } = useParams();
@@ -74,6 +75,7 @@ export default function ProgramDetail() {
 
       {user.role === "coordinator" && (
         <>
+          <ProgramMembers programId={id} />
           <RecurringGeneratorForm programId={id} onGenerated={load} />
           <div className="flex justify-end">
             <RosterExportButton programId={id} programName={program.name} />

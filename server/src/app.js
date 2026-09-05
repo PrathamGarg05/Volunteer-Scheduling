@@ -9,6 +9,7 @@ import shiftEventRoutes from "./routes/shiftEvent.routes.js";
 import shiftSearchRoutes from "./routes/shiftSearch.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import alertsRoutes from "./routes/alerts.routes.js";
+import userRoutes from "./routes/user.routes.js";
 
 const app = express();
 app.use(cors());
@@ -28,5 +29,6 @@ app.use("/api/programs/:id/shifts/:shiftId/events", shiftEventRoutes);
 app.use("/api/shifts", shiftSearchRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/alerts", alertsRoutes);
+app.use("/api/users", userRoutes);
 
 export default app;
