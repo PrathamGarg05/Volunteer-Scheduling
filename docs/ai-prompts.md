@@ -428,3 +428,50 @@ polled every 30s — so the underlying reappear logic was working correctly (con
 count updating on its own), but the Alerts page itself had no mechanism to pick up the change without
 a full remount.Added the same setInterval-based polling pattern (with cleanup via clearInterval) already used in
 NavBar.jsx, at a shorter 15s interval since this is the page someone's actively watching.
+
+## Bug: no frontend for archiving a program
+
+### Prompt
+Reported being unable to archive a program as a coordinator, despite the API route existing and having
+been tested via Postman earlier.
+
+### What you got / diagnosis
+The archive/restore API endpoints existed and worked, but no frontend button was ever built for them —
+a genuine coverage gap between backend testing and frontend completeness, not a broken route.
+
+### What you corrected
+Added archive/restore buttons to ProgramsList.jsx and a "show archived" toggle that passes
+includeArchived to the existing getPrograms API call.
+
+## Bug: recurring generator didn't log a created ShiftEvent
+
+### Prompt
+Reported that shifts made via the recurring generator showed an empty timeline, unlike shifts made
+through the regular create-shift form.
+
+### What you got / diagnosis
+recurring.service.js creates shifts through a separate code path from shift.controller.js's
+createShift, and that separate path never appended a "created" ShiftEvent — a case of two routes doing
+conceptually the same underlying action (creating a shift) drifting out of sync, since the event-logging
+step was added to one path but never ported to the other.
+
+### What you corrected
+Added the missing ShiftEvent.create call inside the recurring generation loop, passing through the
+acting coordinator's id as a new actorId parameter.
+
+## Bug: no frontend for managing program membership
+
+### Prompt
+Reported that a coordinator had no way to add a volunteer to a program in the deployed app, despite
+the API route existing and having been tested via Postman.
+
+### What you got / diagnosis
+Same class of gap as the archive/restore issue — Goal 5's core coordinator action (add/remove a
+volunteer from a program) had a fully tested backend but no frontend was ever built for it. Needed a
+new small endpoint (listVolunteers) too, since there was no existing way to list registered volunteers
+to populate an "add member" dropdown.
+
+### What you corrected
+Added user.controller.js/listVolunteers (coordinator-only), and ProgramMembers.jsx with an add-member
+dropdown (filtered to exclude existing members) and a remove button per member. This closes the last
+required-goal action that had no UI.
