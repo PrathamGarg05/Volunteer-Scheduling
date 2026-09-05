@@ -22,13 +22,21 @@ export default function Register() {
       setError(err.response?.data?.message || "Registration failed.");
     }
   };
-
   return (
-    <div className="max-w-sm mx-auto mt-16">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-sm border space-y-4">
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex lg:w-1/2 bg-indigo-700 text-white flex-col justify-center px-16">
+        <h1 className="text-4xl font-bold mb-4">Volunteer Scheduling</h1>
+        <p className="text-indigo-100 text-lg leading-relaxed">
+          Run your programs, fill your shifts, and know exactly who's showing up — without
+          counting replies in a group chat.
+        </p>
+      </div>
+  
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
         <h2 className="text-2xl font-semibold text-gray-900">Register</h2>
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
-        <input
+         {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
+         <input
           name="name" placeholder="Name" value={form.name} onChange={handleChange} required
           className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
@@ -50,7 +58,8 @@ export default function Register() {
         <p className="text-sm text-gray-500 text-center">
           Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
         </p>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

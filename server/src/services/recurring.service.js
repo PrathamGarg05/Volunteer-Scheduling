@@ -1,4 +1,5 @@
 import Shift from "../models/Shift.js";
+import ShiftEvent from "../models/ShiftEvent.js";
 
 const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -17,6 +18,7 @@ export async function generateRecurringShifts({
   rangeStart,
   rangeEnd,
   holidays = [],   // array of "YYYY-MM-DD" strings
+  actorId
 }) {
   const holidaySet = new Set(holidays);
   const created = [];
@@ -53,6 +55,7 @@ export async function generateRecurringShifts({
           location,
           requiredHeadcount,
         });
+        await ShiftEvent.create({ shift: shift._id, type: "created", actor: actorId });
         created.push({ date: dateStr, shiftId: shift._id });
       }
     }

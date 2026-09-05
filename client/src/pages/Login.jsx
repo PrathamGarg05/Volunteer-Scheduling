@@ -23,27 +23,37 @@ export default function Login() {
   };
 
   return (
-    <div className="max-w-sm mx-auto mt-16">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-sm border space-y-4">
-        <h2 className="text-2xl font-semibold text-gray-900">Login</h2>
-        {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>}
-        <input
-          type="email" placeholder="Email" value={email}
-          onChange={(e) => setEmail(e.target.value)} required
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          type="password" placeholder="Password" value={password}
-          onChange={(e) => setPassword(e.target.value)} required
-          className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <button type="submit" className="w-full bg-indigo-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-indigo-700">
-          Log in
-        </button>
-        <p className="text-sm text-gray-500 text-center">
-          No account? <Link to="/register" className="text-blue-600 hover:underline">Register</Link>
+    <div className="min-h-screen flex">
+      <div className="hidden lg:flex lg:w-1/2 bg-indigo-700 text-white flex-col justify-center px-16">
+        <h1 className="text-4xl font-bold mb-4">Volunteer Scheduling</h1>
+        <p className="text-indigo-100 text-lg leading-relaxed">
+          Run your programs, fill your shifts, and know exactly who's showing up — without
+          counting replies in a group chat.
         </p>
-      </form>
+      </div>
+  
+      <div className="w-full lg:w-1/2 flex items-center justify-center px-6">
+        <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-4">
+          <h2 className="text-2xl font-semibold text-slate-900">Welcome back</h2>
+          {error && <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>}
+          <input
+            type="email" placeholder="Email" value={email}
+            onChange={(e) => setEmail(e.target.value)} required
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <input
+            type="password" placeholder="Password" value={password}
+            onChange={(e) => setPassword(e.target.value)} required
+            className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <button type="submit" className="w-full bg-indigo-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-indigo-700 transition">
+            Log in
+          </button>
+          <p className="text-sm text-slate-500 text-center">
+            No account? <Link to="/register" className="text-indigo-600 hover:underline">Register</Link>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }

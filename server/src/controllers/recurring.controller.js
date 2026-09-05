@@ -18,7 +18,7 @@ export const createRecurringShifts = async (req, res) => {
 
     const report = await generateRecurringShifts({
       programId, dayOfWeek, startTime, durationMinutes, location, requiredHeadcount,
-      rangeStart, rangeEnd, holidays: holidays || [],
+      rangeStart, rangeEnd, holidays: holidays || [],actorId: req.user.id,
     });
 
     res.status(201).json(report);

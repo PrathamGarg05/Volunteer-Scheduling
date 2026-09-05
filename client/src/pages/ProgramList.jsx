@@ -1,19 +1,23 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getPrograms, createProgram } from "../api/program.api.js";
+import { getPrograms, createProgram , archiveProgram, restoreProgram} from "../api/program.api.js";
 import { useAuth } from "../hooks/useAuth.js";
 
 export default function ProgramsList() {
   const [programs, setPrograms] = useState([]);
   const [form, setForm] = useState({ name: "", description: "" });
   const { user } = useAuth();
+  const [showArchived, setShowArchived] = useState(false);
 
   const loadPrograms = async () => {
-    const res = await getPrograms();
+    const res = await getPrograms(showArchived);
     setPrograms(res.data);
   };
-
-  useEffect(() => { loadPrograms(); }, []);
+  
+  useEffect(() => { loadPrograms(); }, [showArchived]);
+  
+  const handleArchive = async (id) => { await archiveProgram(id); loadPrograms(); };
+  const handleRestore = async (id) => { await restoreProgram(id); loadPrograms(); };
 
   const handleCreate = async (e) => {
     e.preventDefault();
@@ -55,12 +59,26 @@ export default function ProgramsList() {
             </button>
         </form>
        )}
-  
+      {user.role === "coordinator" && (
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <input type="checkbox" checked={showArchived} onChange={(e) => setShowArchived(e.target.checked)} />
+          Show archived programs
+        </label>
+      )}
       <ul className="space-y-2">
         {programs.map((p) => (
-          <li key={p._id} className="bg-white border rounded-xl p-4 hover:border-indigo-300 hover:shadow-md transition">
-            <Link to={`/programs/${p._id}`} className="font-medium text-gray-900">{p.name}</Link>
-            <p className="text-sm text-gray-500">{p.description}</p>
+          <li key={p._id} className={`bg-white border rounded-xl overflow-hidden transition ${p.isArchived ? "border-slate-100 opacity-60" : "border-slate-200 hover:border-indigo-300 hover:shadow-md"}`}>
+            <div className="flex items-center justify-between p-4">
+              <Link to={`/programs/${p._id}`} className="flex-1">
+                <p className="font-medium text-slate-900">{p.name}</p>
+                <p className="text-sm text-slate-500">{p.description}</p>
+              </Link>
+              {user.role === "coordinator" && (
+                p.isArchived
+                  ? <button onClick={() => handleRestore(p._id)} className="text-xs text-indigo-600 hover:underline ml-4">Restore</button>
+                  : <button onClick={() => handleArchive(p._id)} className="text-xs text-slate-400 hover:text-red-600 ml-4">Archive</button>
+              )}
+            </div>
           </li>
         ))}
       </ul>
